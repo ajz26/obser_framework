@@ -1,6 +1,8 @@
 <?php
 namespace OBSER\Classes;
 
+use stdClass;
+
 class Helpers {
 
 
@@ -12,6 +14,18 @@ class Helpers {
 
     static function saludar(){
         return 'holis';
+    }
+
+    static function array_to_object(array $array){
+        
+        $object = new stdClass();
+
+        foreach($array AS $key => $val){
+            $object->$key = !is_array($val) ? $val : Helpers::array_to_object($val);
+        }
+
+        return $object;
+
     }
 
 

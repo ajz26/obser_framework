@@ -1,10 +1,10 @@
 .form-field.ob-form-field {
 	width: 100%;
-	margin-bottom: 1rem;
+	margin-bottom: .5rem;
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	padding: 1rem;
+	padding: .5rem;
 	box-sizing: border-box;
 }
 .form-field.ob-form-field label {
@@ -23,4 +23,87 @@
 	padding: .3rem .7rem;
 	color: #666666;
 	width: 100%;
+}
+
+
+.ob-tabs-container{
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.ob-tabs-container *{
+	box-sizing: border-box;
+}
+
+
+.ob-tabs-container .nav-tabs-container {
+	flex: 0 0 15%;
+	width: 15%;
+	z-index: 100;
+	background-color: #f3f6f9;
+	margin: 0 -1px;
+	border-right: 1px solid #dfdfdf;
+}
+
+
+.ob-tabs-container .tabs-content {
+	flex: 0 0 85%;
+	width: 85%;
+	border: 1px solid #cccccc !important;
+	padding: .5rem;
+	border-radius: 0px .6rem .6rem 0rem;
+}
+.ob-tabs-container  .nav-tabs-ul {
+	margin: 0;
+}
+
+.ob-tabs-container  .nav-tabs-ul  .ob-nav-tab-item {
+	margin-bottom: 0;
+}
+.nav-tabs-ul li a {
+	text-decoration: none;
+	font-weight: bold;
+	display: block;
+	padding: 10px;
+	color: inherit;
+}
+
+#ob-content-tab-type:not(.current) {
+	display: none;
+}
+
+
+
+.ob-tabs-container .nav-tabs-ul .ob-nav-tab-item.current a {
+	background-color: #ffffff;
+}
+
+.ob-nav-tab-item a:focus{
+	box-shadow: none;
+	outline: none;
+}
+
+
+.ob-tabs-container .nav-tabs-ul .ob-nav-tab-item {
+	border: 1px solid #cccccc;
+	border-right: 0px;
+	right: -1px;
+	position: relative;
+}
+
+.ob-tabs-container .nav-tabs-ul .ob-nav-tab-item.current {
+	border-left: 3px solid;
+	box-shadow: 0 4px 0 rgba(0, 0, 0, 0.02), 0 1px 0 rgba(0, 0, 0, 0.02);
+	right: -1px;
+}
+
+
+.ob-tabs-container .nav-tabs-ul .ob-nav-tab-item:nth-child(2n) {
+	border-top: 0;
+}
+
+
+.ob-input-desc {
+	color: #cccccc;
 }

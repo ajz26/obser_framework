@@ -62,3 +62,23 @@ function Refresh_Image(the_id,field){
           }
       });
 }
+
+
+// jQuery('.ob-nav-tab-item a').click(function(e){
+//     e.preventDefault();
+
+//     // jQuery('section.ob_settings-section.current').removeClass('current');
+//     //     jQuery('.ob_settings-nav-anchor.current').removeClass('current');
+//     //     jQuery("a.ob_settings-nav-anchor[data-id="+section+"]").addClass('current');
+//     //     jQuery("section.ob_settings-section[data-id="+section+"]").addClass('current');
+
+// });
+
+jQuery(document).on('click','.ob-nav-tab-item a', function (e) {
+    e.preventDefault();
+    let new_tab = jQuery(this).attr('href');
+    jQuery('.ob-nav-tab-item.current').removeClass('current');
+    jQuery('.ob-nav-tab-content.current').removeClass('current');
+    jQuery(".ob-nav-tab-item a[href="+new_tab+"]").parents('.ob-nav-tab-item').addClass('current');
+    jQuery(new_tab).addClass('current');
+});
