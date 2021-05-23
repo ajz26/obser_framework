@@ -1,0 +1,252 @@
+h1, h2, h3, h4, h5, h6 {
+	color: inherit;
+}
+
+
+
+body #wpcontent {
+	padding: 0 !important;
+}
+
+
+.ob_settings-container {
+	padding-top: 60px;
+	font-size: 14px;
+	line-height: 24px;
+}
+
+.ob_settings-header * {
+	color: #ffffff;
+	box-sizing: border-box;
+}
+.ob_settings-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 60px;
+	position: fixed;
+	z-index: 13;
+	top: 32px;
+	left: 160px;
+	right: 0;
+	background-color: #262b55;
+	color: #fff;
+}
+
+.wp-admin.folded .ob_settings-header {
+	left: 36px;
+}
+
+
+.ob_settings-header-logo {
+	flex-shrink: 0;
+	font-weight: 600;
+	padding: 0 40px;
+	width: 180px;
+	white-space: nowrap;
+	background-color: #3f4471;
+	color: #b4b9be;
+	text-align: center;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	min-height: 60px;
+	display: flex;
+	align-items: center;
+}
+.ob_settings-header-title {
+        margin-left: 40px;
+        margin-right: auto;
+        max-width: calc(100vw - 620px);
+}
+
+.ob_settings-header-logo img {
+	max-width: 100%;
+	margin: 0 auto;
+	height: 26px;
+}
+
+.ob_settings-header-title span {
+	float: left;
+	font-size: 20px;
+	line-height: 60px;
+	color: #b4b9be;
+	margin-right: 10px;
+}
+
+.ob_settings-header-title h2 {
+	font-size: 20px;
+	line-height: 60px;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: #fff;
+}
+
+.ob_settings-header-cta {
+	/* flex: 0 0 20%; */
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	flex-shrink: 0;
+	margin: 10px;
+}
+
+
+.btn-ob_settings-header-cta {
+	padding: .7rem 2rem;
+	text-align: center;
+	color: white;
+	background-color: #4f5bce;
+	border: 0;
+	font-weight: bold;
+	border-radius: 5px;
+}
+
+
+.btn-ob_settings-header-cta:hover {
+	opacity: .8;
+    cursor: pointer;
+}
+
+
+
+.ob_settings-nav {
+	position: absolute;
+	z-index: 12;
+	top: 60px;
+	left: 0;
+	width: 180px;
+}
+
+
+.ob_settings-nav-anchor.level_1 {
+	padding: 11px 11px 11px 40px;
+	text-decoration: none !important;
+	color: inherit;
+}
+.ob_settings-nav-item {
+	margin: 0;
+	position: relative;
+}
+
+.ob_settings-nav-item.level_1.current .ob_settings-nav-anchor.level_1 {
+	background-color: #fff;
+	color: #343c87;
+}
+
+.ob_settings-nav-anchor {
+	display: block;
+	line-height: 18px;
+	position: relative;
+	text-decoration: none;
+	box-shadow: none !important;
+	color: inherit;
+}
+
+.ob_settings-section {
+	position: relative;
+	max-width: 920px;
+}
+
+.ob_settings-content {
+	margin-left: 180px;
+	background-color: #ffffff;
+	bottom: 0;
+	min-height: 100vh;
+}
+
+.ob_settings-container * {
+	box-sizing: border-box;
+}
+
+
+.ob_settings-section-content {
+	display: flex;
+	flex-wrap: wrap;
+	padding: 20px 0 40px;
+}
+
+.ob_settings-form-row {
+	clear: both;
+	padding: 15px 40px;
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+}
+.ob_settings-form-row .ob_settings-form-row-title {
+	padding-right: 40px;
+}
+
+.ob_settings-form-row-title {
+	float: left;
+	width: 30%;
+	line-height: 20px;
+	padding: 10px 20px 10px 0;
+	flex: 0 0 30%;
+}
+
+.ob_settings-form-row-field {
+	float: right;
+	width: 70%;
+	position: relative;
+	flex: 0 0 70%;
+}
+.ob_settings-form-row-title label {
+	font-weight: 600;
+}
+
+
+
+.ob_settings-section-heading {
+	display: none;
+	font-size: 24px;
+	line-height: 30px;
+	text-align: center;
+	padding: 20px 40px;
+	cursor: pointer;
+	background-color: #f1f1f1;
+}
+
+.ob_settings-section:not(.current) {
+	display: none;
+}
+
+.ob_settings-form-row-control {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+
+.ob_settings-nav-anchor.level_1.current {
+	font-weight: bold;
+	border-bottom: 1px solid #cccccc;
+	background-color: #ffffff;
+}
+
+.ob_settings-nav-list {
+	margin: 0;
+}
+
+.ob_settings-container input:focus,.ob_settings-container textarea:focus {
+	border: 2px solid !important;
+	box-shadow: none !important;
+}
+.ob_settings-form-row-control input, .ob_settings-form-row-control textarea {
+	width: 100%;
+	max-width: 80%;
+	padding: 4px 10px;
+	border: 1px solid #ccc !important;
+	border-radius: 5px;
+	background-color: #f3f6f9;
+}
+
+@media (max-width:768px) {
+
+	.ob_settings-nav {
+		display: none !important;
+	}
+	
+}

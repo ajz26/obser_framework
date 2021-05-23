@@ -1,0 +1,16 @@
+{
+    "name": "obser/framework",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Tony",
+            "email": "azambrano@obser.co"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "OBSER\\": "Core",
+            "OBSER\\Shortcodes\\": "Shortcodes"
+        }
+    }
+}

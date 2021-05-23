@@ -1,0 +1,26 @@
+.form-field.ob-form-field {
+	width: 100%;
+	margin-bottom: 1rem;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+.form-field.ob-form-field label {
+	flex: 0 0 10%;
+	font-weight: bold;
+	margin-right: 2rem;
+}
+
+.form-field.ob-form-field .form-control {
+	flex: 0 0 85%;
+}
+
+.form-field.ob-form-field input, .form-field.ob-form-field textarea {
+	background-color: #f3f6f9 !important;
+	border-color: #cccccc;
+	padding: .3rem .7rem;
+	color: #666666;
+	width: 100%;
+}
