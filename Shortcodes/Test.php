@@ -6,11 +6,14 @@ class Test extends Shortcode {
     static $shortcode = 'test';
 
     static function generate_css(){
-        return ;
+        return  "body{background-color:red}";
     }
     
     static function output($atts, $content){
-        return "holis 2222  ";
+
+
+
+        return "miguel es un cabrito";
     }
 
 }

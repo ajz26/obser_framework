@@ -128,8 +128,8 @@ class Metabox {
          $_fields = $this->get_fields();
          
          foreach($_fields AS $field){
-            $name   = $field->get_name();
-            $value  = (isset($_POST[$name]) && !empty($_POST[$name]))   ?   $_POST[$name]   : null; 
+            $name           = $field->get_name();
+            $value          = (isset($_POST[$name]) && !empty($_POST[$name]))   ?   $_POST[$name]   : null; 
 
             if(isset($_POST[$name])){
                 update_post_meta($post_id,$name,$value);

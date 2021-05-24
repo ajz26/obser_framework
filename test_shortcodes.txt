@@ -40,3 +40,15 @@ _____
 null
 _____
 null
+_____
+""
+_____
+""
+_____
+""
+_____
+"body{background-color:red}"
+_____
+null
+_____
+null
