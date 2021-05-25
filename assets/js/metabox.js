@@ -82,3 +82,42 @@ jQuery(document).on('click','.ob-nav-tab-item a', function (e) {
     jQuery(".ob-nav-tab-item a[href="+new_tab+"]").parents('.ob-nav-tab-item').addClass('current');
     jQuery(new_tab).addClass('current');
 });
+
+
+
+jQuery(document).on('click','.clone-button', function (e) {
+    e.preventDefault();
+    let ref = jQuery(this).data('input');
+    let container   = jQuery(this).parents('.form-control');
+    let inputs      = jQuery(container).find(`.obser-field-container[data-ref='${ref}']`);
+    if(inputs.length <= 0 ) return false;
+
+    let input       = inputs[0];
+    let new_input   = jQuery(input).clone();
+    jQuery(new_input).find('input,textarea').val('');
+    jQuery(new_input).append('<button class=\"cloneable-field-button remove\"><span class=\"dashicons dashicons-no-alt\"></span></button>');
+    
+    jQuery(new_input).insertBefore(this);
+});
+
+
+jQuery(document).on('click','.cloneable-field-button.remove', function (e) {
+    e.preventDefault();
+    jQuery(this).parents('div.obser-field-container').remove();
+});
+
+
+jQuery(document).on('change','.obser-field[type="checkbox"]', function (e) {
+    e.preventDefault();
+    let checked = jQuery(this).is(':checked');
+    if(!checked){
+        jQuery(this).val(0)
+    }else{
+        jQuery(this).val(1)
+    }
+
+});
+
+
+
+
