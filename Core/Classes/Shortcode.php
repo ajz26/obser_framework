@@ -5,12 +5,12 @@ abstract class Shortcode{
     
     static $shortcode;
     static $atts = [];
-    static $component_namespace = "CCOM_CORE\\Components";
+    static $wpb_namespace = "OBSER\\WPB_Components";
 
     static function get_component(){
         $class = static::get_class();
-        $component_namespace = static::$component_namespace;
-        $shortcode_class = "$component_namespace\\{$class}";
+        $wpb_namespace = static::$wpb_namespace;
+        $shortcode_class = "$wpb_namespace\\{$class}";
         return $shortcode_class;
     }
 

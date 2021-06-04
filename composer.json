@@ -10,7 +10,9 @@
     "autoload": {
         "psr-4": {
             "OBSER\\": "Core",
-            "OBSER\\Shortcodes\\": "Shortcodes"
+            "OBSER\\Shortcodes\\": "Shortcodes",
+            "OBSER\\Config\\": "Config",
+            "OBSER\\WPB_Components\\": "plugins-support/Components"
         }
     }
 }

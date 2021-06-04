@@ -30,7 +30,7 @@ class Helpers {
 
 
     public static function get_styles($position = "footer", bool $in_string = true) {
-        $styles = self::$_styles[$position];
+        $styles = isset(self::$_styles[$position]) ? self::$_styles[$position] : array();
         return  ($in_string) ? self::generate_string($styles , "style") : $styles;
     }
     
@@ -98,4 +98,29 @@ class Helpers {
 		);
 		return preg_replace($from,$to,$css);
 	}
+
+    static function merge_advanced_atts($atts , $new_atts){
+
+
+        array_walk($atts,function(&$att,$key) use ($new_atts){
+            $type       = \gettype($att);
+            $type       = ($type == 'string' && $att == 'NULL') ? NULL : $type;
+
+            if(array_key_exists($key,$new_atts)){
+                switch($type){
+                    case 'string':
+                    case 'int':
+                        $att = $new_atts[$key];
+                    break;
+                    case 'array':
+                        $att = $new_atts[$key];
+                    break;
+                }
+            };
+        });
+
+        return $atts;
+    }
+
+
 }

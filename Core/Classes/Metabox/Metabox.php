@@ -70,6 +70,11 @@ class Metabox {
         return $this;
     }
 
+    public static function get_image_url_by_id($id, $size = 'medium'){
+        $image = \wp_get_attachment_image_src( $id, $size, false);
+        return isset($image[0]) ? $image[0] : null;
+    }
+
     public function enquee_script_and_styles(){
         add_action( 'admin_enqueue_scripts',function(){
             wp_enqueue_media();

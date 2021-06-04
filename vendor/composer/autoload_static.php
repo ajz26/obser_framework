@@ -9,15 +9,25 @@ class ComposerStaticInit9ee9bef0ac78d99cccd7ebddca179171
     public static $prefixLengthsPsr4 = array (
         'O' => 
         array (
+            'OBSER\\WPB_Components\\' => 21,
             'OBSER\\Shortcodes\\' => 17,
+            'OBSER\\Config\\' => 13,
             'OBSER\\' => 6,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'OBSER\\WPB_Components\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/plugins-support/Components',
+        ),
         'OBSER\\Shortcodes\\' => 
         array (
             0 => __DIR__ . '/../..' . '/Shortcodes',
+        ),
+        'OBSER\\Config\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/Config',
         ),
         'OBSER\\' => 
         array (

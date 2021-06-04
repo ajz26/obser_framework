@@ -1,6 +1,5 @@
 <?php
-namespace CCOM_CORE\Components;
-
+namespace OBSER\Classes;
 
 abstract class Component{
     

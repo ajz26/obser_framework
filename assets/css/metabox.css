@@ -313,3 +313,8 @@
   .slider.round:before {
 	border-radius: 50%;
   }
+
+
+#wp-content-editor-tools {
+	background-color: transparent !important;
+}

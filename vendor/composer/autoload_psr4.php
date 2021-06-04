@@ -6,6 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'OBSER\\WPB_Components\\' => array($baseDir . '/plugins-support/Components'),
     'OBSER\\Shortcodes\\' => array($baseDir . '/Shortcodes'),
+    'OBSER\\Config\\' => array($baseDir . '/Config'),
     'OBSER\\' => array($baseDir . '/Core'),
 );

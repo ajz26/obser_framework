@@ -8,8 +8,8 @@ class OBSER_SHORTCODES{
 
     protected   static    $_shortcodes;
     private     static    $instance = [];
-    private     static    $shortcodes_dir       = OBSER_FRAMEWORK_DIR_PATH .'shortcodes/';
-    private     static    $shortcodes_namespace = 'OBSER\Shortcodes';
+                static    $shortcodes_dir       = OBSER_FRAMEWORK_DIR_PATH .'shortcodes/';
+                static    $shortcodes_namespace = 'OBSER\Shortcodes';
     public static function instance() {
         $class = get_called_class();
         if(!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class){
@@ -32,13 +32,12 @@ class OBSER_SHORTCODES{
 
     protected  static function load_shortcodes($shortcodes_dir = null){
         $class              = get_called_class();
-        $shortcodes_dir     = self::$shortcodes_dir;
-
+        $shortcodes_dir     = static::$shortcodes_dir;
         self::$_shortcodes  = self::read_folder($class,$shortcodes_dir);
     }
 
 
-    private static function read_folder($class,$shortcodes_dir,$subdir = null) {
+    protected static function read_folder($class,$shortcodes_dir,$subdir = null) {
         
         $_shortcodes = [];
 
@@ -47,13 +46,15 @@ class OBSER_SHORTCODES{
         }
 
         $scan = array_diff(scandir($shortcodes_dir), array('..', '.'));
+
+
         foreach($scan as $file) {
             if(preg_match('/(?<filename>[\w\-\d]*)\.php$/',$file, $matches)){
-
                 $class_name = $matches['filename'];
-                $shortcodes_namespace = self::$shortcodes_namespace;
+                $shortcodes_namespace = static::$shortcodes_namespace;
                 $shortcode  =  !isset($subdir) ? "$shortcodes_namespace\\$class_name" : "$shortcodes_namespace\\$subdir\\$class_name";
                 if(!class_exists($shortcode) || !isset($shortcode::$shortcode)) continue;
+
                 $_shortcodes[$class][$shortcode::$shortcode] = $shortcode;
 
             }else if(preg_match('/(?<foldername>^[\w\-\d]*)$/',$file, $matches)){
@@ -95,10 +96,10 @@ class OBSER_SHORTCODES{
 
     public function register_shortcodes(){
         $class = get_called_class();
-        $shortcodes = (array)self::$_shortcodes[$class];
+        $shortcodes = (array) isset(self::$_shortcodes) && isset(self::$_shortcodes[$class]) ? self::$_shortcodes[$class] : array();
+
         foreach($shortcodes AS $shortcode){
             if($shortcode::$shortcode){
-                
                 add_shortcode($shortcode::$shortcode,array($this,$shortcode));
 
                 add_action('wp_enqueue_scripts',function() use ($shortcode){
@@ -109,6 +110,7 @@ class OBSER_SHORTCODES{
 
                 add_action('wp_enqueue_scripts',function() use ($shortcode){
                     foreach((array)$shortcode::enquee_scripts() AS $script => $data){
+                        if(!isset($data['src'])) continue;
                         wp_register_script($script, $data['src'], $data['deps'], $data['in_footer']);
                     }
                     foreach((array)$shortcode::localize_script() AS $script => $data){
@@ -154,13 +156,13 @@ class OBSER_SHORTCODES{
 			unset( $custom_output_before );
 		}
 
-        // $attsString             = Optimizer::string_atts((array)$atts);
-        // $design_css_class       = Optimizer::get_design_css_class($attsString);
-        // $styles                 = (string) $shortcode::general_styles();
-        // Optimizer::set_style($styles);
-        // $atts['vc_id']          = $design_css_class;
-        // $atts['uniqid']         = uniqid();
-        // $shortcode::buildAtts((array)$atts,$content);
+        $attsString             = Helpers::string_atts((array)$atts);
+        $design_css_class       = Helpers::get_design_css_class($attsString);
+        $styles                 = (string) $shortcode::general_styles();
+        Helpers::set_style($styles);
+        $atts['vc_id']          = $design_css_class;
+        $atts['uniqid']         = uniqid();
+        $shortcode::buildAtts((array)$atts,$content);
 		$_output .= $shortcode::output($atts,$content);
       
 
@@ -181,7 +183,7 @@ class OBSER_SHORTCODES{
 			$_output = apply_filters( 'vc_shortcode_output', $_output, $this, isset( $args[0] ) ? $args[0] : array(), $shortcode );
 		}
         
-		return $_output;
+		return "$_output";
 	}
 
 
@@ -219,10 +221,10 @@ class OBSER_SHORTCODES{
             update_post_meta( $post->ID, '_obser_custom_css', $ccom_custom_css );
         }
 
-        $file = fopen(OBSER_FRAMEWORK_DIR_PATH."/test_shortcodes.txt", "a");
-        fwrite($file, "_____" . PHP_EOL);
-        fwrite($file, json_encode($ccom_custom_css) . PHP_EOL);
-        fclose($file);
+        // $file = fopen(OBSER_FRAMEWORK_DIR_PATH."/test_shortcodes.txt", "a");
+        // fwrite($file, "_____" . PHP_EOL);
+        // fwrite($file, json_encode($ccom_custom_css) . PHP_EOL);
+        // fclose($file);
 
         return $ccom_custom_css;
 
@@ -232,9 +234,49 @@ class OBSER_SHORTCODES{
 
 add_action('wp_head',function(){
     global $post;
-    $css        = (is_object($post))? get_post_meta($post->ID,'_obser_custom_css',true) : null;
+    $post_id = null;
+    if (!$post_id && is_page(  )) {
+        $post_id  = $post->ID;
+    }else if(!$post_id && is_archive(  )){
+        
+        $term_id     = get_queried_object()->term_id;
+        $taxonomy    = get_queried_object()->taxonomy;
+        if(function_exists('us_get_option')){
+            $template_zone[] = us_get_option("content_tax_{$taxonomy}_id")  !== '__defaults__'  ?:  us_get_option('content_archive_id') ?: get_term_meta( $term_id, 'archive_content_id' ,true);
+            $template_zone[] = us_get_option("header_tax_{$taxonomy}_id")    !== '__defaults__' ?   us_get_option("header_tax_{$taxonomy}_id") : us_get_option("header_archive_id");
+            $template_zone[] = us_get_option("content_tax_{$taxonomy}_id")  !== '__defaults__'  ?   us_get_option("content_tax_{$taxonomy}_id") : us_get_option("content_archive_id");
+            $template_zone[] = us_get_option("footer_tax_{$taxonomy}_id")   !== '__defaults__'  ?   us_get_option("footer_tax_{$taxonomy}_id") : us_get_option("footer_archive_id");
+        }
+       
+
+    }
+    $css = null;
+    foreach( $template_zone AS $zone){
+        $css   .= (isset($zone))? get_post_meta($zone,'_obser_custom_css',true) : null;
+    }
+
+
     Helpers::set_style($css,"header");
     $styles     = Helpers::get_styles("header");
+    echo $styles;
+
+});
+
+
+add_action('wp_footer',function(){
+    global $post;
+    $post_id = null;
+    if (!$post_id && is_page(  )) {
+        $post_id  = $post->ID;
+    }else if(!$post_id && is_archive(  )){
+        
+        $term_id    = get_queried_object()->term_id;
+        $post_id    =  get_term_meta( $term_id, 'archive_content_id' ,true);
+    }
+
+
+    $css        = (isset($post_id))? get_post_meta($post_id,'_obser_custom_css',true) : null;
+    $styles     = Helpers::get_styles("footer");
     echo $styles;
 });
 

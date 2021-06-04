@@ -1,7 +1,7 @@
 <?php 
 
 namespace OBSER\Classes;
-
+use OBSER\Classes\Metabox\Metabox;
 use _WP_Editors;
 
 class Settings {

@@ -60,6 +60,7 @@ class OBSER{
 
     private static function load_functions(){
         require_once  OBSER_FRAMEWORK_DIR_PATH . 'functions/functions.php';
+        require_once  OBSER_FRAMEWORK_DIR_PATH . 'plugins-support/js_composer.php';
     }
 }
 
