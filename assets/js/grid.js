@@ -116,18 +116,18 @@ class obser_GRID {
 
     refresh_grid(grid,atts){
     let obser_grid   =   jQuery('.contenedor-obser-grid[data-shortcode_id='+grid+']');
-    let settings    =   obser_grid.attr("data-obser-grid-settings");
-    settings        =   JSON.parse(settings);
-    console.log(settings);
+    let settings     =   obser_grid.attr("data-obser-grid-settings");
+    settings         =   JSON.parse(settings);
     if(atts.paged) {
         settings['paged']  = atts.paged;
     }
 
     if(atts.filters) {
         let filters = atts.filters
-        settings['filters']  = {...settings['filters'],filters};
+        settings['filters']  = {...settings['filters'],...filters};
     }
 
+    console.log(settings);
     jQuery.ajax({
         type: "GET",
         url: obser_core.ajax_url,
@@ -158,46 +158,55 @@ class obser_GRID {
         var $i      = 0;
         var fields  = {};
 
-        jQuery('.buscador-obser input').not('.no-filter').each(function(i,e){
+        jQuery('.inmmoob-searchform input, .inmmoob-searchform select').not('.no-filter').each(function(i,e){
             let val         = jQuery(this).val(),        
-                mx_name     = jQuery(this).data('name'),
-                inputType   = jQuery(this).attr('type');
-
+                mx_name     = jQuery(this).attr('name');
             if(!fields[mx_name]) fields[mx_name] = [];
-
-            if(inputType == 'checkbox' && jQuery(this).is(':checked')){
-                fields[mx_name].push(val);
-            }else if((inputType == 'radio' && jQuery(this).is(':checked')) || inputType == 'text' || inputType == 'hidden'){
-                fields[mx_name] = val;
+            
+            if(jQuery(this).is("select")){
+                val = jQuery(this).children('option:selected').val();
+                if(val !== ''){
+                    fields[mx_name].push(val);
+                }
+            
+            }else if(jQuery(this).is("input")){
+                
+                inputType   = jQuery(this).attr('type');
+                if(inputType == 'checkbox' && jQuery(this).is(':checked')){
+                    fields[mx_name].push(val);
+                }else if((inputType == 'radio' && jQuery(this).is(':checked')) || inputType == 'text' || inputType == 'hidden'){
+                    fields[mx_name] = val;
+                }
             }
+
         });
+
+
         obser_grid._add_setting(grid,'filters',fields,refresh);
 
+    }
+
+    get_grid_by_gid(gid){
+        return jQuery("div[data-gid="+gid+"]");
     }
 
 }
 
 var obser_grid = new obser_GRID();
 
-
-function get_grid_by_gid(gid){
-    return jQuery("div[data-gid="+gid+"]");
-}
-
 jQuery(document).on('click','.prev-next-link', function(){
     let parent_grid = jQuery(this).parents('.contenedor-obser-grid').attr('data-shortcode_id'),
         next_page   = jQuery(this).attr('data-next_page'); 
         obser_grid.handlerFields(parent_grid,false);
-    console.log(parent_grid);
-
         obser_grid._add_setting(parent_grid, 'paged',next_page,true);
 });
 
 
-jQuery('.buscador-obser input').not('.no-filter').change(function(){
-    handlerFields(this);
-    let grid_gid        = jQuery(this).parents('.buscador-obser').data('grid'),
-        grid            = get_grid_by_gid(grid_gid),
+jQuery('.inmmoob-searchform input,.inmmoob-searchform select').not('.no-filter').change(function(){
+    
+
+    let grid_gid        = jQuery(this).parents('.inmmoob-searchform').data('grid'),
+        grid            = obser_grid.get_grid_by_gid(grid_gid),
         shortcode_id    = jQuery(grid).data('shortcode_id');
 
         if(jQuery(this).attr('name') !== 'heuristic'){
@@ -213,39 +222,47 @@ jQuery('.buscador-obser input').not('.no-filter').change(function(){
         obser_grid.handlerFields(shortcode_id);
 });
 
-
-
-function handlerFields(field) {
-
-    let val                         = jQuery(field).val();
-    if(!val) return false;
-    let slug                        = val.replace(/ /g, "-"),
-        id                          = jQuery(field).attr('id'),
-        name                        = jQuery(field).attr('name'),
-        val_mostrar                 = jQuery('label[for="'+id+'"]').text(),
-        mx_name                     = jQuery(field).data('name'),
-        isArray                     = (name.search(/[[]]$/) > 1) ? true : false,
-        inputType                   = jQuery(field).attr('type');
-        slug                        = slug.replace(/\(|\)/g, "");
-        let html_tag_inner_select   = `<span class="val-selected val-selected-${mx_name}-${slug} " field="${name}"  val="${slug}" >${val_mostrar}</span>`;
-
-        // jQuery(`.val-selected-${mx_name}-${slug}`).remove();
-
-    if (jQuery(field).is(':checked')) {
-        if (isArray) {
-        let currentsval = jQuery('.to-ellipsis[data-name="' + mx_name + '"] .values_selected').html();
-            jQuery('.to-ellipsis[data-name="' + mx_name + '"] .values_selected').html(`${html_tag_inner_select}${currentsval}`);
-        } else {
-            jQuery('.to-ellipsis[data-name="' + mx_name + '"] .values_selected').html(`${html_tag_inner_select}`);
-        }
-    } else {
-        jQuery(`.val-selected-${mx_name}-${slug}`).remove();
-    }
-
-    if (inputType == 'radio') jQuery(field).parents('.caja__selector-lista.collapse').collapse('hide');
-}
-
-
 jQuery('.buscador-obser').submit(function (e) { 
     e.preventDefault();
 });
+
+
+
+
+jQuery('select[name=\"property_types_taxonomy\"]').change(function(e){
+    let property_type = jQuery(this).children('option:selected').val();
+    if(property_type == '') property_type = 'inmuebles';
+    var pathname = window.location.pathname; 
+    var matches = pathname.match(/(?:^\/(?<gestion_type>[^?\n\/]+))(?:\/(?<property_type>[^?\n\/]+))?(?:\/(?<property_zone>[^?\n\/]+))?/i);
+    if(matches[2]){
+        pathname = pathname.replace(matches[2],property_type); 
+    }else{
+        pathname = `${pathname}inmuebles/`;
+    }
+
+    window.history.pushState("", "", pathname);
+
+})
+
+
+jQuery('select[name=\"property_zones_taxonomy\"]').change(function(e){
+    let property_zone = jQuery(this).children('option:selected').val();
+
+    console.log(property_zone);
+    var pathname = window.location.pathname; 
+    var matches = pathname.match(/(?:^\/(?<gestion_type>[^?\n\/]+))(?:\/(?<property_type>[^?\n\/]+))?(?:\/(?<property_zone>[^?\n\/]+))?/i);
+    if(!matches[2]){
+        pathname = `${pathname}inmuebles/`;
+    }
+    if(matches[3]){
+        pathname = pathname.replace(matches[3],property_zone); 
+    }else if(property_zone != ''){
+        pathname = `${pathname}${property_zone}/`;
+    }
+    
+    pathname = pathname.replace('//','/');
+
+
+    window.history.pushState("", "", pathname);
+
+})

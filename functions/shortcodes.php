@@ -235,6 +235,7 @@ class OBSER_SHORTCODES{
 add_action('wp_head',function(){
     global $post;
     $post_id = null;
+    $template_zone = [];
     if (!$post_id && is_page(  )) {
         $post_id  = $post->ID;
     }else if(!$post_id && is_archive(  )){

@@ -50,7 +50,10 @@ class _Grid extends Shortcode{
 
 
         if($term = get_queried_object()){
-            self::$grid_settings['filters']= array_merge((array)self::$grid_settings['filters'],array(
+            self::$grid_settings = self::$grid_settings ?: array();
+
+
+            self::$grid_settings['filters'] = array_merge((array)self::$grid_settings['filters'],array(
                 $term->taxonomy => $term->slug
             ));
 

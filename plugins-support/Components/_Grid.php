@@ -10,7 +10,6 @@ use function OBSER\Config\Grid\get_vc_grid_items;
 abstract class _Grid extends Component {
 
     public static function map(): array {
-        $templates = array();
         return array(
             'name'                      => "Grid",
             'params' => array(
