@@ -127,7 +127,6 @@ class obser_GRID {
         settings['filters']  = {...settings['filters'],...filters};
     }
 
-    console.log(settings);
     jQuery.ajax({
         type: "GET",
         url: obser_core.ajax_url,
@@ -140,7 +139,8 @@ class obser_GRID {
         },
         dataType: "html",
         beforeSend: function() {
-            jQuery(obser_grid).children('.obser-custom-preloader').toggleClass('d-none');
+            jQuery(obser_grid).children('.obser-custom-preloader').fadeIn('fast');
+            jQuery(obser_grid).toggleClass('loading');
         },
         success: function (response) {
             jQuery(obser_grid).children('.obser-custom-grid-items').html(response);
@@ -148,7 +148,8 @@ class obser_GRID {
         error: function (response) {
         },
         complete: function(){
-            jQuery(obser_grid).children('.obser-custom-preloader').addClass('d-none');
+            jQuery(obser_grid).children('.obser-custom-preloader').fadeOut('fast');
+            jQuery(obser_grid).toggleClass('loading');
         }
     });
 
@@ -166,12 +167,12 @@ class obser_GRID {
             if(jQuery(this).is("select")){
                 val = jQuery(this).children('option:selected').val();
                 if(val !== ''){
-                    fields[mx_name].push(val);
+                    fields[mx_name] = val;
                 }
             
             }else if(jQuery(this).is("input")){
                 
-                inputType   = jQuery(this).attr('type');
+                let inputType = jQuery(this).attr('type');
                 if(inputType == 'checkbox' && jQuery(this).is(':checked')){
                     fields[mx_name].push(val);
                 }else if((inputType == 'radio' && jQuery(this).is(':checked')) || inputType == 'text' || inputType == 'hidden'){
@@ -209,15 +210,6 @@ jQuery('.inmmoob-searchform input,.inmmoob-searchform select').not('.no-filter')
         grid            = obser_grid.get_grid_by_gid(grid_gid),
         shortcode_id    = jQuery(grid).data('shortcode_id');
 
-        if(jQuery(this).attr('name') !== 'heuristic'){
-            jQuery('#heuristic, #heuristic_value').val('');
-        }else{
-            jQuery('.input-buscador--obser_stores_category, .input-buscador--obser_restaurants_category, .input-buscador--start_with').each(function(i,el){
-                let def = jQuery(el).data('default');
-                if(checked = def == 1) jQuery(el).prop('checked',checked);
-            });
-        }
-
         obser_grid._add_setting(shortcode_id, 'paged',1);
         obser_grid.handlerFields(shortcode_id);
 });
@@ -247,8 +239,6 @@ jQuery('select[name=\"property_types_taxonomy\"]').change(function(e){
 
 jQuery('select[name=\"property_zones_taxonomy\"]').change(function(e){
     let property_zone = jQuery(this).children('option:selected').val();
-
-    console.log(property_zone);
     var pathname = window.location.pathname; 
     var matches = pathname.match(/(?:^\/(?<gestion_type>[^?\n\/]+))(?:\/(?<property_type>[^?\n\/]+))?(?:\/(?<property_zone>[^?\n\/]+))?/i);
     if(!matches[2]){
@@ -266,3 +256,26 @@ jQuery('select[name=\"property_zones_taxonomy\"]').change(function(e){
     window.history.pushState("", "", pathname);
 
 })
+
+
+jQuery('.field-list > span.label').click(function(e){
+    e.preventDefault();
+    jQuery(this).toggleClass('show');
+});
+
+
+jQuery(document).ready(function () {
+    jQuery('.obser-custom-preloader').hide();
+});
+let last_text = null;
+jQuery('.toggle-cta').click(function (e) { 
+    e.preventDefault();
+
+    jQuery(this).toggleClass('active');
+    if(jQuery(this).children('.toggle-text').text() == 'Cerrar'){
+        jQuery(this).html(last_text);
+    }else{
+        last_text = jQuery(this).html();
+        jQuery(this).html('<span class="toggle-text">Cerrar</span>');
+    }
+});
