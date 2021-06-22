@@ -510,8 +510,8 @@ class _Grid extends Shortcode{
 
 
 
-        $html_top       = (\in_array($show_pagination, array('top', 'all')) && $n_pages > 1) ? "<div class='grid-nav grid-top'>{$prev_link}{$next_link} {$items_founds}</div>" : null;
-        $html_bottom    = (\in_array($show_pagination, array('bottom', 'all'))  && $n_pages > 1 ) ? "<div class='grid-nav grid-bottom'>{$prev_link}{$next_link} {$current_page_html}</div>" : null;
+        $html_top       = (\in_array($show_pagination, array('top', 'all')) && $n_pages >= 1) ? "<div class='grid-nav grid-top'>{$prev_link}{$next_link} {$items_founds}</div>" : null;
+        $html_bottom    = (\in_array($show_pagination, array('bottom', 'all'))  && $n_pages >= 1 ) ? "<div class='grid-nav grid-bottom'>{$prev_link}{$next_link} {$current_page_html}</div>" : null;
 
         $output     .= "
                         {$html_top}
