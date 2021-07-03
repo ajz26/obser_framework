@@ -22,8 +22,6 @@
 	box-sizing: border-box;
 }
 
-
-
 .form-field.ob-form-field label {
 	flex: 0 0 10%;
 	font-weight: bold;
@@ -39,9 +37,13 @@
 	flex: 0 0 85%;
 }
 
-.form-field.ob-form-field input, .form-field.ob-form-field textarea, .form-field.ob-form-field select {
-	background-color: #f3f6f9 !important;
-	border-color: #cccccc;
+tr.form-field .form-field.ob-form-field .form-control {
+	flex: 0 0 100%;
+}
+
+.form-field.ob-form-field input[type="text"], .form-field.ob-form-field textarea, .form-field.ob-form-field select {
+	background-color: #ffffff;
+	border-color: #999999;
 	padding: .3rem .7rem;
 	color: #666666;
 	width: 100%;

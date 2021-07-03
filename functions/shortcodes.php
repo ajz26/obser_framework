@@ -8,7 +8,7 @@ class OBSER_SHORTCODES{
 
     protected   static    $_shortcodes;
     private     static    $instance = [];
-                static    $shortcodes_dir       = OBSER_FRAMEWORK_DIR_PATH .'shortcodes/';
+                static    $shortcodes_dir       = OBSER_FRAMEWORK_DIR_PATH .'Shortcodes/';
                 static    $shortcodes_namespace = 'OBSER\Shortcodes';
     public static function instance() {
         $class = get_called_class();

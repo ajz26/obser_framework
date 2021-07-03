@@ -19,16 +19,19 @@ add_action( 'init', function () {
 	global $pagenow;
 
 	$components =  OBSER_SHORTCODES::get_shortcodes() ?: array();
+	
 	$is_edit_vc_roles = (
 		$pagenow === 'admin.php'
 		AND $_GET["page"] === 'vc-roles'
 	);
 
+
+
 	$vc_lean_wpb_ccom_comp = function($component) use($is_edit_vc_roles){
 
 		$shortcode 	= $component::$shortcode;
 		$elm 		= $component::get_component();
-        
+		
 
 
 		if(!class_exists($elm)) return false;
@@ -105,7 +108,7 @@ add_action( 'init', function () {
 			}
 		}
 	}
-}, 8 );
+}, 100 );
 
 
 add_action( 'current_screen', function () {

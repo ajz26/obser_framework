@@ -47,8 +47,6 @@ class Metabox {
         $this->tabs     = isset($args['tabs'])          ? $this->parse_tabs($args['tabs'])      : null;
         $this->fields   = isset($args['fields'])        ? $this->parse_fields($args['fields'])  : array();
 
-
-
         if ( is_admin() ) {
             add_action( 'load-edit-tags.php', array( $this, 'enquee_script_and_styles' ) );
             
@@ -89,8 +87,8 @@ class Metabox {
         $fields = $this->fields;
         $screen = $this->screen;
         foreach($fields AS $field){
-           $name   = (isset($field['name'])    && !empty($field['name']))  ? sanitize_key($field['name'])  : null ;
-           $std     = (isset($field['std'])    && !empty($field['std']))     ? $field['std']  : "" ; 
+           $name   = (isset($field->name)    && !empty($field->name))  ? sanitize_key($field->name)  : null ;
+           $std     = (isset($field->std)    && !empty($field->std))     ? $field->std  : "" ; 
            register_meta( 'term', $name , array( 'default' => $std, 'sanitize_callback' => array('Taxonomy','sanitize_term_meta_value') ));
         }
 
@@ -163,17 +161,23 @@ class Metabox {
 
         $nonce   = isset( $_POST['obser_mb'] ) ? $_POST['obser_mb'] : '';
 
+
+
          // Check if nonce is valid.
          if ( ! wp_verify_nonce( $nonce) ) {
              return;
          }
 
+
          $fields = $this->fields;
 
          foreach($fields AS $field){
-            $name       = (isset($field['name'])    && !empty($field['name']))  ? sanitize_key($field['name'])  : null ;
+            $name       = $field->get_att('id') ? : null ;
             $value      = (isset($_POST[$name])     && !empty($_POST[$name]))   ? sanitize_text_field( $_POST[$name] )   : null ; 
-            $old_value  = Taxonomy::get_term_meta($term_id, $name);
+            $old_value  = get_term_meta( $term_id,  $name , true );
+            // var_dump($name);
+
+            // $field['id'];
 
             if ( $old_value && '' === $value ){
                 delete_term_meta( $term_id, $name );
@@ -206,6 +210,9 @@ class Metabox {
     }
 
     private function parse_fields(array $_fields = null){
+
+
+
         if( !isset($_fields) || !is_array($_fields)) return null;
 
         $fields = [];
@@ -213,6 +220,7 @@ class Metabox {
         foreach($_fields AS $field){
             
             $field      = Helpers::array_to_object($field);
+
             $tab        = isset($field->tab) ? $field->tab : null;
             $field      = new Field($field);
 
@@ -285,35 +293,34 @@ class Metabox {
 
 
 
-    // public function render_taxonomy_fields($term = null){
-    //     $fields = $this->fields;
-    //     $mb_title  = $this->title;
-    //     $html   = "";
-    //     wp_nonce_field(-1, 'obser_mb' );
+    public function render_taxonomy_fields($term = null){
+        $fields = $this->fields;
+        $mb_title  = $this->title;
+        $html   = "";
+        wp_nonce_field(-1, 'obser_mb' );
 
-    //     $term_id = isset($term->term_id ) ? $term->term_id : false;
-      
-    //     foreach($fields as $field) {
+        $term_id = isset($term->term_id ) ? $term->term_id : false;
+
+
+        foreach($fields as $field) {
             
-    //         $name           =   $field['name'];
-    //         $title          =   $field['title'];
-    //         $id             =   "obser-field-{$name}";
-    //         $value          =   Taxonomy::get_term_meta($term_id, $name);
-    //         $field_html     =   self::get_field($field,$value);
+            $name           =   $field->get_att('name');
+            $id             =   $field->get_att('id');
+                                $field->set_att('name',null);
+            $field_html     =   $field->render($term_id,'term');
+            if($field_html){
+                    $label = ($name) ? "<th><label for='$id'>$name</label></th>" : NULL;
+                    $html .="<tr class='form-field form-field-{$id}'>{$label} <td>$field_html</td></tr>";
+            }
+        }
 
-    //         if($field_html){
-    //             $label = ($title) ? "<th><label for='$id'>$title</label></th>" : NULL;
-    //             $html .="<tr class='form-field form-field-{$id}'>{$label} <td>$field_html</td></tr>";
-    //         }
-    //     }
-
-    //     if(strlen($html)){
-    //         $html = "<tr class='obser-term-meta-title'>
-    //                     <td colspan='2'  style='font-size: 1.5rem; font-weight: bold;margin: 0;padding: 0;'>{$mb_title}</td>
-    //                 </tr>{$html}";
-    //     }
-    //     echo $html;
-    // }
+        if(strlen($html)){
+            $html = "<tr class='obser-term-meta-title'>
+                        <td colspan='2'  style='font-size: 1.5rem; font-weight: bold;margin: 0;padding: 0;'>{$mb_title}</td>
+                    </tr>{$html}";
+        }
+        echo $html;
+    }
 
 
     public static function remove( $metabox, $screen = null,  $context = null ){

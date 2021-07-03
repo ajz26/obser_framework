@@ -12,6 +12,7 @@ class Field {
     protected $columns;
     protected $taxonomy;
     protected $add_button;
+    protected $values;
     protected $clone;
     public function get_name(){
         return isset($this->name) ? $this->name : null;
@@ -27,6 +28,10 @@ class Field {
 
     public function get_att($att){
         return isset($this->$att) ? $this->$att : null; 
+    }
+
+    public function set_att($att,$val){
+        $this->$att = $val;
     }
 
 
@@ -47,7 +52,7 @@ class Field {
 
     }
 
-    public function render($post) : string {
+    public function render($object = null, $object_type = 'post') : string {
         
         $id                 = isset($this->id)                      ? $this->id             : false ;
         $type               = isset($this->type)                    ? $this->type           : false ;
@@ -56,21 +61,37 @@ class Field {
         $placeholder        = isset($this->placeholder)             ? $this->placeholder    : false ;
         $std                = isset($this->std)                     ? $this->std            : false ;
         $name               = isset($this->id)                      ? $this->id             : null  ;
-        
+        $value               = isset($this->value)                  ? $this->value          : null  ;
 
-        $value_group   = (array)get_post_meta($post->ID,$name,true)   ?   : (array)$std;
+
+
+        if($object_type == 'post'){
+            $value_group        = (array)get_post_meta($object->ID,$name,true)   ?   : (array)$std;
+
+        }else if($object_type == 'term'){
+            $value_group        = (array)get_term_meta($object,$name,true)   ?   : (array)$std;
+        }
+
         
         if($this->is_cloneable()){
             $name = "{$name}[]";
         }
 
+
+
         $value  = (count($value_group) <= 1) ? $value_group[0] : $value_group;
         
+
+
         if($type == 'taxonomy' && isset($taxonomy)){
             $this->data = get_terms(array('taxonomy' =>$taxonomy, 'hide_empty' => false, 'fields' => 'id=>name' )) ?: array();
         }
 
+
+
         if(!$name OR !$type) return false;
+
+
 
         $id     = "obser-field-{$id}";
         $field  = null;
@@ -78,6 +99,7 @@ class Field {
         switch($type){
             case "text" : 
                 $i = 0;
+
                 foreach($value_group AS $value){ 
                     $clone   = ($i >=1) ? 'clone' : null; 
                     $field  .= "<div class='obser-field-container {$clone}' data-ref='{$id}'>";
@@ -145,6 +167,9 @@ class Field {
             $field = "";
         }
 
+
+
+        
         $cloneable_button = $this->is_cloneable() ? "<button class='clone-button button button-primary' data-input='{$id}'>{$this->add_button}</button>" : null;
         $classes            = $this->is_cloneable() ? 'cloneable-field' : null;
         $description        = ($description) ? "<span class='ob-input-desc'><i>{$description}</i></span>" : null;

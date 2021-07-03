@@ -52,7 +52,7 @@ class _Grid extends Shortcode{
         if($term = get_queried_object()){
             self::$grid_settings = self::$grid_settings ?: array();
 
-
+            self::$grid_settings['filters'] = isset(self::$grid_settings['filters'])?: array();
             self::$grid_settings['filters'] = array_merge((array)self::$grid_settings['filters'],array(
                 $term->taxonomy => $term->slug
             ));
@@ -484,12 +484,12 @@ class _Grid extends Shortcode{
             }
 
 
-            $current_page_html .= '<div class="grid-nav-info text-center">';
-            $current_page_html .= sprintf(__('%d de %s'), $paged, $n_pages);
+            $current_page_html .= '<div class="grid-nav-info text-center current-index-pages">';
+            $current_page_html .= sprintf(__('Página %d de %s'), $paged, $n_pages);
             $current_page_html .= '</div>';
 
-            $items_founds .= '<div class="grid-nav-info text-center">';
-            $items_founds .= sprintf(_n( '%s resultado encontrado', '%s resultados encontrados', $count_posts, 'obser' ), number_format_i18n( $count_posts ) );
+            $items_founds .= '<div class="grid-nav-info text-center items-founds">';
+            $items_founds .= sprintf(_n( '%s resultado encontrado.', '%s resultados encontrados.', $count_posts, 'obser' ), number_format_i18n( $count_posts ) );
             
             $items_founds .= '</div>';
 
