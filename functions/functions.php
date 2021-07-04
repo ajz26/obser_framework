@@ -7,3 +7,6 @@ function ob_get_logo_url(){
     
 require_once OBSER_FRAMEWORK_DIR_PATH ."Config/Grid.php";
 require_once OBSER_FRAMEWORK_DIR_PATH ."functions/shortcodes.php";
+require_once OBSER_FRAMEWORK_DIR_PATH ."functions/rest_api.php";
+
+
