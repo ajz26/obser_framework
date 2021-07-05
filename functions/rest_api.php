@@ -27,7 +27,6 @@ class OBSER_REST_API{
         $class              = get_called_class();
         $_endpoints_dir     = static::$_endpoints_dir;
         self::$_endpoints   = self::read_folder($class,$_endpoints_dir);
-
     }
 
     protected static function read_folder($class,$_endpoints_dir,$subdir = null) {
@@ -50,7 +49,7 @@ class OBSER_REST_API{
                 $endpoint               =  !isset($subdir) ? "$shortcodes_namespace\\$class_name" : "$shortcodes_namespace\\$subdir\\$class_name";
 
                 if(!class_exists($endpoint)) continue;
-                $_endpoints[$class][$endpoint::get_route()] = $endpoint;
+                $_endpoints[$class][$endpoint::get_namespace()."/".$endpoint::get_route()] = $endpoint;
 
             }else if(preg_match('/(?<foldername>^[\w\-\d]*)$/',$file, $matches)){
                 $foldername          = $matches['foldername'];
@@ -59,7 +58,6 @@ class OBSER_REST_API{
                 $_endpoints[$class]  = array_merge($_endpoints[$class],$temps[$class]);
             }
         }
-
         return $_endpoints;
     }
 
@@ -67,11 +65,16 @@ class OBSER_REST_API{
     public function register_endpoints(){
         $class      = get_called_class();
         $_endpoints = (array) isset(self::$_endpoints) && isset(self::$_endpoints[$class]) ? self::$_endpoints[$class] : array();
+
+
         foreach($_endpoints AS $_endpoint){
+
+
             $namespace  = $_endpoint::get_namespace();
             $route      = $_endpoint::get_route();
             $method     = $_endpoint::get_method();
 
+            
             register_rest_route($namespace, $route, array(
                 'methods'               => $method,
                 'callback'              => array($_endpoint,'callback'),

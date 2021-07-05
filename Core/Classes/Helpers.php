@@ -122,5 +122,77 @@ class Helpers {
         return $atts;
     }
 
+    static function stripslashes_deep($value){
+        $value = is_array($value) ?
+                    array_map(array(__CLASS__,'stripslashes_deep'), $value) :
+                    stripslashes($value);
+
+        return $value;
+    }
+
+
+
+    
+static function upload_external_media($raw_urls) {
+
+	$urls = array();
+    $raw_urls = is_array($raw_urls) ? $raw_urls : (array)$raw_urls;
+    $attachment_ids = [];
+	foreach ( $raw_urls as $i => $raw_url ) {
+		$urls[$i] = esc_url_raw( trim( $raw_url ) );
+	}
+
+	foreach ( $urls as $url ) {
+   
+        $image_size = @getimagesize( $url );
+        if ( empty( $image_size ) ) {
+            array_push( $failed_urls, $url );
+            continue;
+        }
+
+
+
+        $width_of_the_image         =   $image_size[0];
+        $height_of_the_image        =   $image_size[1];
+        $response                   =   wp_remote_head( $url );
+
+        if ( is_array( $response ) && isset( $response['headers']['content-type'] ) ) {
+            $mime_type_of_the_image = $response['headers']['content-type'];
+        } else {
+            continue;
+        }
+		
+		$filename   = wp_basename( $url );
+		$attachment = array(
+			'guid'              => $url,
+			'post_mime_type'    => $mime_type_of_the_image,
+			'post_title'        => preg_replace( '/\.[^.]+$/', '', $filename ),
+		);
+		$attachment_metadata = array(
+			'width'     => $width_of_the_image,
+			'height'    => $height_of_the_image,
+			'file'      => $filename
+        );
+		$attachment_metadata['sizes']   = array( 'full' => $attachment_metadata );
+		$attachment_id                  = wp_insert_attachment( $attachment );
+
+		wp_update_attachment_metadata( $attachment_id, $attachment_metadata );
+
+		array_push( $attachment_ids, $attachment_id );
+	}
+
+	$info['attachment_ids'] = $attachment_ids;
+	
+    
+    $failed_urls_string     = implode( "\n", $failed_urls );
+	$info['urls']           = $failed_urls_string;
+
+	if ( ! empty( $failed_urls_string ) ) {
+		$info['error'] = 'Failed to get info of the image(s).';
+	}
+    
+	return (count($info['attachment_ids']) == 1) ? $info['attachment_ids'][0] : $info['attachment_ids'];
+}
+
 
 }

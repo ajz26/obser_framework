@@ -17,6 +17,13 @@ abstract class Endpoint{
         return static::$route;
     }
 
+    static function get_url(){
+
+        $namespace  = static::$namespace ?: null;
+        $route      = static::$route ?: null;
+        return get_rest_url( null ,"{$namespace}/{$route}");
+    }
+
     static function get_method(){
         return static::$method ?: 'GET';
     }
