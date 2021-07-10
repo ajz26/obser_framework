@@ -123,6 +123,8 @@ class Helpers {
     }
 
     static function stripslashes_deep($value){
+       $value = str_replace(array('\n','\r'),'',$value);
+
         $value = is_array($value) ?
                     array_map(array(__CLASS__,'stripslashes_deep'), $value) :
                     stripslashes($value);
@@ -131,6 +133,11 @@ class Helpers {
     }
 
 
+    static function get_id_from_guid( $guid ){
+        global $wpdb;
+        return $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid=%s", $guid ) );
+    
+    }
 
     
 static function upload_external_media($raw_urls) {
@@ -138,6 +145,7 @@ static function upload_external_media($raw_urls) {
 	$urls = array();
     $raw_urls = is_array($raw_urls) ? $raw_urls : (array)$raw_urls;
     $attachment_ids = [];
+    $failed_urls    = [];
 	foreach ( $raw_urls as $i => $raw_url ) {
 		$urls[$i] = esc_url_raw( trim( $raw_url ) );
 	}
@@ -150,33 +158,36 @@ static function upload_external_media($raw_urls) {
             continue;
         }
 
+        if(!$attachment_id  = self::get_id_from_guid( $url )){
+            $width_of_the_image         =   $image_size[0];
+            $height_of_the_image        =   $image_size[1];
+            $response                   =   wp_remote_head( $url );
 
+            if ( is_array( $response ) && isset( $response['headers']['content-type'] ) ) {
+                $mime_type_of_the_image = $response['headers']['content-type'];
+            } else {
+                continue;
+            }
+            
+            $filename   = wp_basename( $url );
+            $attachment = array(
+                'guid'              => $url,
+                'post_mime_type'    => $mime_type_of_the_image,
+                'post_title'        => preg_replace( '/\.[^.]+$/', '', $filename ),
+            );
+            $attachment_metadata = array(
+                'width'     => $width_of_the_image,
+                'height'    => $height_of_the_image,
+                'file'      => $filename
+            );
+            $attachment_metadata['sizes']   = array( 'full' => $attachment_metadata );
+            $attachment_id                  = wp_insert_attachment( $attachment );
 
-        $width_of_the_image         =   $image_size[0];
-        $height_of_the_image        =   $image_size[1];
-        $response                   =   wp_remote_head( $url );
-
-        if ( is_array( $response ) && isset( $response['headers']['content-type'] ) ) {
-            $mime_type_of_the_image = $response['headers']['content-type'];
-        } else {
-            continue;
+            wp_update_attachment_metadata( $attachment_id, $attachment_metadata );
+        
         }
-		
-		$filename   = wp_basename( $url );
-		$attachment = array(
-			'guid'              => $url,
-			'post_mime_type'    => $mime_type_of_the_image,
-			'post_title'        => preg_replace( '/\.[^.]+$/', '', $filename ),
-		);
-		$attachment_metadata = array(
-			'width'     => $width_of_the_image,
-			'height'    => $height_of_the_image,
-			'file'      => $filename
-        );
-		$attachment_metadata['sizes']   = array( 'full' => $attachment_metadata );
-		$attachment_id                  = wp_insert_attachment( $attachment );
 
-		wp_update_attachment_metadata( $attachment_id, $attachment_metadata );
+        
 
 		array_push( $attachment_ids, $attachment_id );
 	}
@@ -193,6 +204,26 @@ static function upload_external_media($raw_urls) {
     
 	return (count($info['attachment_ids']) == 1) ? $info['attachment_ids'][0] : $info['attachment_ids'];
 }
+
+
+    static function set_term_by_slug($post,$value,$taxonomy){
+
+        $term       = get_term_by('slug', $value ,$taxonomy);
+
+        $term_id    = isset($term->term_id) ? $term->term_id : null;
+        
+        if(!$term_id){
+           $term = wp_insert_term( $value, $taxonomy);
+           if ( !is_wp_error( $term ) ) {
+                $term_id = $term['term_id'];
+            }
+        }
+        try {
+            wp_set_object_terms($post->ID,intval($term_id), $taxonomy);
+        } catch (\WP_Error $error) {
+            error_log($error->get_error_messages());
+        }
+    }
 
 
 }
