@@ -3,7 +3,7 @@ namespace OBSER\WPB_Components;
 use OBSER\Classes\Component;
 use function OBSER\Config\Grid\params;
 use function OBSER\Config\Grid\get_listables_post_types;
-use function OBSER\Config\Grid\get_vc_grid_items;
+use function OBSER\Config\Grid\get_404_templates;
 
 
 
@@ -169,24 +169,16 @@ abstract class _Grid extends Component {
                     "edit_field_class"  => "vc_col-xs-12",
                     "param_name"        => "separator",
                 ),
-                // array(
-                //     'type'              => 'dropdown',
-                //     'group'             => __( 'Apariencia', 'ccom' ),
-                //     'heading'           => esc_html__( 'Diseño de cuadrícula', 'ccom' ),
-                //     'param_name'        => 'item',
-                //     'edit_field_class'  => 'vc_col-xs-6',
-                //     "save_always"       => true,
-                //     'value'             => get_vc_grid_items(),
-                // ),
-                // array(                  
-                //     'group'             => __( 'Apariencia', 'ccom' ),
-                //     'heading'           => __('Busqueda desierta', 'ccom'),
-                //     'edit_field_class'  => 'vc_col-xs-6',
-                //     'type'              => 'dropdown',
-                //     'value'             => $templates,
-                //     'param_name'        => 'template_busqueda_desierta',
-                //     'save_always'       => true,
-                // ),
+
+                array(                  
+                    'group'             => __( 'Apariencia', 'ccom' ),
+                    'heading'           => __('Busqueda desierta', 'ccom'),
+                    'edit_field_class'  => 'vc_col-xs-12',
+                    'type'              => 'dropdown',
+                    'value'             => get_404_templates(),
+                    'param_name'        => 'not_results_page_block',
+                    'save_always'       => true,
+                ),
                 array(
                     'group'             => __( 'Apariencia', 'ccom' ),
                     'heading'           => esc_html__( 'Espacio lateral entre elementos', 'ccom' ),

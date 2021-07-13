@@ -200,7 +200,7 @@ class _Grid extends Shortcode{
             'mx_responsive_val_2'           => '',
             'mx_responsive_3'               => '',
             'mx_responsive_val_3'           => '',
-            'template_busqueda_desierta'    => '',
+            'not_results_page_block'        => '',
             'post__in'                      => '',
             'post_type'                     => '',
             'show_first'                    => '',
@@ -424,9 +424,18 @@ class _Grid extends Shortcode{
             wp_reset_postdata();
             $post = $backup;
         } else {
-            $shortcode_id = self::get_atts('shortcode_id');
+            $shortcode_id               = self::get_atts('shortcode_id');
+            $not_results_page_block_id  = self::get_atts('not_results_page_block');
+            \WPBMap::addAllMappedShortcodes();
 
-            $output .= "aqui va una busqueda desierta
+            if($not_results_page_block_id){
+                $pb      = get_the_content($not_results_page_block_id);
+                $output .= do_shortcode($pb);
+            }
+ 
+
+            
+            $output .= "
             <script>
                 jQuery(document).ready(function () {
                     obser_grid.delete_cookie('{$shortcode_id}')

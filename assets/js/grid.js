@@ -174,10 +174,30 @@ class obser_GRID {
                 
                 let inputType = jQuery(this).attr('type');
                 if(inputType == 'checkbox' && jQuery(this).is(':checked')){
-                    fields[mx_name].push(val);
+                    if(jQuery(this).hasClass('switch')){
+                        fields[mx_name] = val;
+                    }else{
+                        fields[mx_name].push(val);
+                    }
                 }else if((inputType == 'radio' && jQuery(this).is(':checked')) || inputType == 'text' || inputType == 'hidden'){
                     fields[mx_name] = val;
                 }
+            }
+
+            if(val == '-'){
+                jQuery(this).parents('div.inmoob-select').children('input, select').not('.no-filter').each(function(i,e){
+                    let val         = jQuery(this).val(),        
+                        mx_name     = jQuery(this).attr('name');
+                    let inputType   = jQuery(this).attr('type');
+
+                        if(val !== '-'){
+                            if(inputType == 'checkbox' || inputType == 'radio'){
+                                jQuery(this).prop('checked',false);
+                            }else if(inputType == 'text' || inputType == 'hidden'){
+                                jQuery(this).val('');
+                            }  
+                        }
+                });
             }
 
         });
@@ -212,6 +232,7 @@ jQuery('.inmmoob-searchform input,.inmmoob-searchform select').not('.no-filter')
 
         obser_grid._add_setting(shortcode_id, 'paged',1);
         obser_grid.handlerFields(shortcode_id);
+
 });
 
 jQuery('.buscador-obser').submit(function (e) { 

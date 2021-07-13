@@ -1,20 +1,17 @@
 <?php
 namespace OBSER\Classes;
 
+use WP_Query;
 use stdClass;
 
 class Helpers {
 
-
+    private static  $instance   = [];
     protected static $_styles   = [];
     protected static $_scripts  = [];
     protected static $_posts    = [];
     protected static $_data     = [];
-
-
-    static function saludar(){
-        return 'holis';
-    }
+    public  static  $WP_Query;
 
     static function array_to_object(array $array){
         
@@ -25,6 +22,44 @@ class Helpers {
         }
 
         return $object;
+
+    }
+
+    public static function instance() {
+        $class = get_called_class();
+        if(!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class){
+            self::$instance[$class] = new static();
+        }
+        return  self::$instance[$class]; // remove this line after testing
+    }
+
+    function __construct() {
+        self::set_Wp_Query();
+    }
+
+    static function set_Wp_Query(){
+        self::$WP_Query = new WP_Query();
+    }
+
+
+    static function get_posts($post_types){
+        $post_types = (array)$post_types;
+        $args = array (
+            'post_type'             => $post_types,
+            'pagination'             => false,
+            'posts_per_page'         => '-1',
+            'order'                  => 'ASC',
+            'orderby'                => 'title',
+        );
+
+        $posts  = self::$WP_Query->query($args);
+        $output = null;
+
+        foreach($post_types AS $post_type){
+            $output = apply_filters( "obser_get_post_lists_{$post_type}",$posts,$args);
+        }
+
+        return $output;
 
     }
 
@@ -209,17 +244,16 @@ static function upload_external_media($raw_urls) {
     static function set_term_by_slug($post,$value,$taxonomy){
 
         $term       = get_term_by('slug', $value ,$taxonomy);
-
         $term_id    = isset($term->term_id) ? $term->term_id : null;
         
         if(!$term_id){
-           $term = wp_insert_term( $value, $taxonomy);
+           $term = wp_insert_term($value, $taxonomy);
            if ( !is_wp_error( $term ) ) {
                 $term_id = $term['term_id'];
             }
         }
         try {
-            wp_set_object_terms($post->ID,intval($term_id), $taxonomy);
+           $res =  wp_set_object_terms($post->ID,$term_id, $taxonomy,true);
         } catch (\WP_Error $error) {
             error_log($error->get_error_messages());
         }
@@ -227,3 +261,5 @@ static function upload_external_media($raw_urls) {
 
 
 }
+
+new Helpers();

@@ -20,14 +20,24 @@ namespace OBSER\Config\Grid {
 
         return $data;
     }
-    
-    function get_searchable_post_types(){
-        return array();
-        return array(
-            'Tiendas'       =>  'ccom_stores',
-            'Restaurantes'  =>  'ccom_restaurants'
-        );
+
+
+    function get_404_templates(){
+
+        $data = [];
+
+            $vc_grid_items = Helpers::get_posts('us_page_block');
+            
+            foreach($vc_grid_items as $header){
+                $label = $header->post_title;
+                $value = $header->ID;
+                $data[$label] = $value;
+            }
+
+        return $data;
     }
+    
+
 
     function get_listables_post_types(){
         
