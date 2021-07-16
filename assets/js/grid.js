@@ -150,6 +150,8 @@ class obser_GRID {
         complete: function(){
             jQuery(obser_grid).children('.obser-custom-preloader').fadeOut('fast');
             jQuery(obser_grid).toggleClass('loading');
+            jQuery('html, body').animate({ scrollTop: jQuery(obser_grid).offset().top -100 }, 1000);
+
         }
     });
 

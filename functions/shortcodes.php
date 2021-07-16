@@ -221,11 +221,6 @@ class OBSER_SHORTCODES{
             update_post_meta( $post->ID, '_obser_custom_css', $ccom_custom_css );
         }
 
-        // $file = fopen(OBSER_FRAMEWORK_DIR_PATH."/test_shortcodes.txt", "a");
-        // fwrite($file, "_____" . PHP_EOL);
-        // fwrite($file, json_encode($ccom_custom_css) . PHP_EOL);
-        // fclose($file);
-
         return $ccom_custom_css;
 
     }
@@ -234,49 +229,34 @@ class OBSER_SHORTCODES{
 
 add_action('wp_head',function(){
     global $post;
-    $post_id = null;
-    $template_zone = [];
-    if (!$post_id && is_page(  )) {
-        $post_id  = $post->ID;
-    }else if(!$post_id && is_archive(  )){
-        
-        $term_id     = get_queried_object()->term_id;
-        $taxonomy    = get_queried_object()->taxonomy;
-        if(function_exists('us_get_option')){
-            $template_zone[] = us_get_option("content_tax_{$taxonomy}_id")  !== '__defaults__'  ?:  us_get_option('content_archive_id') ?: get_term_meta( $term_id, 'archive_content_id' ,true);
-            $template_zone[] = us_get_option("header_tax_{$taxonomy}_id")    !== '__defaults__' ?   us_get_option("header_tax_{$taxonomy}_id") : us_get_option("header_archive_id");
-            $template_zone[] = us_get_option("content_tax_{$taxonomy}_id")  !== '__defaults__'  ?   us_get_option("content_tax_{$taxonomy}_id") : us_get_option("content_archive_id");
-            $template_zone[] = us_get_option("footer_tax_{$taxonomy}_id")   !== '__defaults__'  ?   us_get_option("footer_tax_{$taxonomy}_id") : us_get_option("footer_archive_id");
-        }
-       
+    $post_id        = null;
+    $template_zone  = [];
 
+
+    if (isset($post) && $post_id  = $post->ID) {
+        $template_zone[] = $post_id;
     }
+
+    if(function_exists('us_get_page_area_id')){
+        $template_zone[] = us_get_page_area_id('header');
+        $template_zone[] = us_get_page_area_id('content');
+        $template_zone[] = us_get_page_area_id('footer');
+    }
+
+
+
     $css = null;
     foreach( $template_zone AS $zone){
         $css   .= (isset($zone))? get_post_meta($zone,'_obser_custom_css',true) : null;
     }
 
-
     Helpers::set_style($css,"header");
     $styles     = Helpers::get_styles("header");
     echo $styles;
-
 });
 
 
 add_action('wp_footer',function(){
-    global $post;
-    $post_id = null;
-    if (!$post_id && is_page(  )) {
-        $post_id  = $post->ID;
-    }else if(!$post_id && is_archive(  )){
-        
-        $term_id    = get_queried_object()->term_id;
-        $post_id    =  get_term_meta( $term_id, 'archive_content_id' ,true);
-    }
-
-
-    $css        = (isset($post_id))? get_post_meta($post_id,'_obser_custom_css',true) : null;
     $styles     = Helpers::get_styles("footer");
     echo $styles;
 });

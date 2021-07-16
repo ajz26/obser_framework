@@ -666,6 +666,17 @@ class _Grid extends Shortcode{
         // $nav_color_hover            = (is_array($nav_color_hover) && array_key_exists('rgba',$nav_color_hover))? $nav_color_hover['rgba'] : $nav_color_hover['color'];
 
         $general_styles = "
+
+        .prev-next-link-container {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .prev-next-link-container.prev-next-off {
+            opacity: 0;
+            visibility: hidden;
+        }
+
         .prev-next-link {
             align-items: center;
         }
@@ -682,6 +693,6 @@ class _Grid extends Shortcode{
         ";
         $general_styles .= grid_styles();
 
-        return "";
+        return $general_styles;
     }
 }
