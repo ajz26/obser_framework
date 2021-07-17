@@ -241,7 +241,7 @@ static function upload_external_media($raw_urls) {
 }
 
 
-    static function set_term_by_slug($post,$value,$taxonomy){
+    static function set_term_by_slug($post,$value,$taxonomy,$append = false){
 
         $term       = get_term_by('slug', $value ,$taxonomy);
         $term_id    = isset($term->term_id) ? $term->term_id : null;
@@ -253,7 +253,7 @@ static function upload_external_media($raw_urls) {
             }
         }
         try {
-           $res =  wp_set_object_terms($post->ID,$term_id, $taxonomy,true);
+           $res =  wp_set_object_terms($post->ID,$term_id, $taxonomy,$append);
         } catch (\WP_Error $error) {
             error_log($error->get_error_messages());
         }
