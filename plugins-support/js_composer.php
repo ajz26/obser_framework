@@ -22,7 +22,7 @@ add_action( 'init', function () {
 	
 	$is_edit_vc_roles = (
 		$pagenow === 'admin.php'
-		AND $_GET["page"] === 'vc-roles'
+		AND isset( $_GET["page"]) AND  $_GET["page"] === 'vc-roles'
 	);
 
 

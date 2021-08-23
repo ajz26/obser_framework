@@ -161,7 +161,7 @@ class OBSER_SHORTCODES{
         $styles                 = (string) $shortcode::general_styles();
         Helpers::set_style($styles);
         $atts['vc_id']          = $design_css_class;
-        $atts['uniqid']         = uniqid();
+        $atts['uniqid']         = uniqid();        
         $shortcode::buildAtts((array)$atts,$content);
 		$_output .= $shortcode::output($atts,$content);
       

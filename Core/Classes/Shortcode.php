@@ -5,6 +5,8 @@ abstract class Shortcode{
     
     static $shortcode;
     static $atts = [];
+    static $general_encoled = false;
+
     static $wpb_namespace = "OBSER\\WPB_Components";
 
     static function get_component(){

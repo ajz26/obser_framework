@@ -291,14 +291,16 @@ jQuery(document).ready(function () {
     jQuery('.obser-custom-preloader').hide();
 });
 let last_text = null;
-jQuery('.toggle-cta').click(function (e) { 
-    e.preventDefault();
 
-    jQuery(this).toggleClass('active');
-    if(jQuery(this).children('.toggle-text').text() == 'Cerrar'){
-        jQuery(this).html(last_text);
-    }else{
-        last_text = jQuery(this).html();
-        jQuery(this).html('<span class="toggle-text">Cerrar</span>');
-    }
+
+jQuery('.toggle-cta , .close-modal').click(function(){
+    jQuery(this).parents('.inmoob-content-sform').children('.content-form').slideToggle('medium', function() {
+        if (jQuery(this).is(':visible'))
+            jQuery(this).css('display','flex');
+    });
+
+    jQuery('.toggle-cta').toggleClass('active');
+
+    jQuery(this).parents('.inmoob-content-sform').toggleClass('modal-active');
+
 });

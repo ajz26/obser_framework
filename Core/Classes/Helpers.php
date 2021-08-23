@@ -25,6 +25,21 @@ class Helpers {
 
     }
 
+
+    static function array_to_attr($array){
+
+        $result = join(' ', array_map(function($key) use ($array){
+            if(is_bool($array[$key])) {
+                return $array[$key]?$key:'';
+            }
+
+            return $key.'="'.$array[$key].'"';
+
+            }, array_keys($array)));
+        
+        return $result;
+    }
+
     public static function instance() {
         $class = get_called_class();
         if(!isset(self::$instance[$class]) || !self::$instance[$class] instanceof $class){

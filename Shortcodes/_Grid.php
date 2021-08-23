@@ -26,46 +26,56 @@ class _Grid extends Shortcode{
 
     protected static function postID()
     {
-        if (!self::$post_id && is_page(  )) {
-            self::$post_id  = get_the_ID();
-        }else if(!self::$post_id && is_archive(  )){
+        if (!static::$post_id && is_page(  )) {
+            static::$post_id  = get_the_ID();
+        }else if(!static::$post_id && is_archive(  )){
             
             $term_id        = get_queried_object()->term_id;
             $taxonomy       = get_queried_object()->taxonomy;
-            self::$post_id  = us_get_option("content_tax_{$taxonomy}_id")  !== '__defaults__'  ?:  us_get_option('content_archive_id') ?: get_term_meta( $term_id, 'archive_content_id' ,true);
+
+            if(function_exists('us_get_page_area_id')){
+                static::$post_id = us_get_page_area_id('content');
+            }
 
         }
-        return self::$post_id;
+        
+        return static::$post_id;
     }
 
     public static function buildGridSettings()
     {
         $shortcode = static::$shortcode;
 
-        self::$grid_settings = array_merge((array)self::$grid_settings,array(
-            'page_id' => self::get_atts('page_id'),
+        static::$grid_settings = array_merge((array)static::$grid_settings,array(
+            'page_id' => static::get_atts('page_id'),
             'action'  => "get_{$shortcode}_data",
             'tag'     => $shortcode
         ));
 
 
-        if($term = get_queried_object()){
-            self::$grid_settings = self::$grid_settings ?: array();
+        $term = get_queried_object();
 
-            self::$grid_settings['filters'] = isset(self::$grid_settings['filters'])?: array();
-            self::$grid_settings['filters'] = array_merge((array)self::$grid_settings['filters'],array(
+        $post_type              = self::get_atts('post_type');
+        $post_type_taxonomies   = get_object_taxonomies($post_type);
+        $term                   = get_queried_object();
+        
+        if(isset($term) && in_array($term->taxonomy,$post_type_taxonomies)){
+            static::$grid_settings = static::$grid_settings ?: array();
+
+            static::$grid_settings['filters'] = isset(static::$grid_settings['filters'])?: array();
+            static::$grid_settings['filters'] = array_merge((array)static::$grid_settings['filters'],array(
                 $term->taxonomy => $term->slug
             ));
 
-            $filters = self::get_atts('filters',array());
+            $filters = static::get_atts('filters',array());
 
-            $filters = array_merge($filters,self::$grid_settings['filters']);
-            self::set_att('filters',$filters);
+            $filters = array_merge($filters,static::$grid_settings['filters']);
+            static::set_att('filters',$filters);
 
         }
 
-        if (self::get_atts('shortcode_id') !== null) {
-            self::$grid_settings['shortcode_id'] = self::get_atts('shortcode_id');
+        if (static::get_atts('shortcode_id') !== null) {
+            static::$grid_settings['shortcode_id'] = static::get_atts('shortcode_id');
         }
     }
 
@@ -80,6 +90,8 @@ class _Grid extends Shortcode{
     public static function extract_data(){
         $tag                = str_replace('.', '', vc_request_param('tag'));
         $shortcode_fishbone = visual_composer()->getShortCode($tag);
+        
+
         if (is_object($shortcode_fishbone) && vc_get_shortcode($tag)) {
             $res                = static::renderAjax(vc_request_param('data'));
             $res                = apply_filters( 'vc_get_vc_grid_data_response',  $res);		
@@ -117,7 +129,10 @@ class _Grid extends Shortcode{
     {   
 
 
-        self::$items        = array();
+        static::$items        = array();
+
+
+
         $page_id            = isset($vc_request_param['page_id'])         ? $vc_request_param['page_id']          : null;
         $id                 = isset($vc_request_param['shortcode_id'])    ? $vc_request_param['shortcode_id']     : false;
         $posts_per_page     = isset($vc_request_param['posts_per_page'])  ? $vc_request_param['posts_per_page']   : null;
@@ -136,7 +151,7 @@ class _Grid extends Shortcode{
         \visual_composer()->registerAdminCss();
         \visual_composer()->registerAdminJavascript();
 
-        self::$post_id = (int) $page_id;
+        static::$post_id = (int) $page_id;
 
         $shortcode_atts     = $shortcode['atts'];
 
@@ -156,13 +171,13 @@ class _Grid extends Shortcode{
 
         if (vc_is_page_editable() || is_preview()) {
             return rawurlencode(wp_json_encode(array(
-                'tag'       => self::$shortcode,
+                'tag'       => static::$shortcode,
                 'atts'      => $atts,
                 'content'   => $content,
             )));
         }
 
-        $id_pattern = '/' . self::$grid_id_unique_name . '\:([\w\-_]+)/';
+        $id_pattern = '/' . static::$grid_id_unique_name . '\:([\w\-_]+)/';
         $id_value   = isset($atts['grid_id']) ? $atts['grid_id'] : '';
 
         preg_match($id_pattern, $id_value, $id_matches);
@@ -184,7 +199,6 @@ class _Grid extends Shortcode{
             'vc_id'                         => '',
             'show_filter'                   => '',
             'orderby'                       => 'date',
-            'filter_source'                 => 'category',
             'element_width'                 => 4,
             'order'                         => 'DESC',
             'item'                          => null,
@@ -209,11 +223,12 @@ class _Grid extends Shortcode{
     }
 
     static function buildAtts($atts = array(), $content = null){
+
         static::set_default_atts();
 
-        self::$items                        = array();
-        self::$post_id                      = null;
-        self::$grid_settings                = array();
+        static::$items                        = array();
+        static::$post_id                      = null;
+        static::$grid_settings                = array();
         
         $id_to_save = null;
         $arr_keys   = array_keys($atts);
@@ -225,50 +240,51 @@ class _Grid extends Shortcode{
 
 
         if (isset($atts['grid_id']) && !empty($atts['grid_id'])) {
-            $id_to_save = self::getId($atts, $content);
+            $id_to_save = static::getId($atts, $content);
         }
 
         $atts           = shortcode_atts(static::$attributes_defaults, $atts);
-        self::set_atts($atts);
+        static::set_atts($atts);
         if (isset($id_to_save)) {
-            self::set_att('shortcode_id', $id_to_save);
+            static::set_att('shortcode_id', $id_to_save);
         }
 
 
-        $post_types = self::get_atts('post_type');
-        self::set_att('post_type', \explode(',', $post_types));
+        $post_types = static::get_atts('post_type');
+        static::set_att('post_type', \explode(',', $post_types));
 
-        $max_items      = self::get_atts('max_items');
-        $posts_per_page = self::get_atts('posts_per_page');
+        $max_items      = static::get_atts('max_items');
+        $posts_per_page = static::get_atts('posts_per_page');
 
         if($posts_per_page == -1 && $max_items !== -1){
-            self::set_att('posts_per_page', $max_items);
+            static::set_att('posts_per_page', $max_items);
         }
 
-        self::set_att('page_id', self::postID());
-        $item = self::get_atts('item');
+        static::set_att('page_id', static::postID());
+        $item = static::get_atts('item');
 
-        self::set_att('item', $item);
-        self::$element_template = $content;
+        static::set_att('item', $item);
+        static::$element_template = $content;
 
 
         if (!defined('DOING_AJAX') || !DOING_AJAX) {
-            $cookie       = self::get_cookie_data($id_to_save);
-            if (isset($cookie['paged'])) {
-                self::set_att('paged', $cookie['paged']);
-            }
+            // $cookie       = static::get_cookie_data($id_to_save);
+            // if (isset($cookie['paged'])) {
+            //     static::set_att('paged', $cookie['paged']);
+            // }
         }
 
-        $advanced_query         = self::get_atts('advanced_query');
+        $advanced_query         = static::get_atts('advanced_query');
         if($advanced_query){
             $advanced_query_args    = [];
             $advanced_query         = str_replace(array("`{``}`","`{`","`}`"),array('[]','[',']'),$advanced_query);
             parse_str($advanced_query,$advanced_query_args);
-            $atts = self::get_atts();
+
+            $atts = static::get_atts();
             $atts = Helpers::merge_advanced_atts($atts,$advanced_query_args);
             
 
-            self::set_atts($atts);
+            static::set_atts($atts);
 
         }
 
@@ -277,42 +293,42 @@ class _Grid extends Shortcode{
 
     protected static function get_default_att($att = null)
     {
-        return isset($att) ? (isset(self::$attributes_defaults[$att]) ? self::$attributes_defaults[$att] : null) : self::$attributes_defaults;
+        return isset($att) ? (isset(static::$attributes_defaults[$att]) ? static::$attributes_defaults[$att] : null) : static::$attributes_defaults;
     }
 
     protected static function set_custom_content_limits()
     {
 
-        $atts = self::get_atts();
+        $atts = static::get_atts();
 
-        if (self::get_atts('offset') == null) {
-            $offset = self::get_default_att('offset');
-            self::set_att('offset', $offset);
+        if (static::get_atts('offset') == null) {
+            $offset = static::get_default_att('offset');
+            static::set_att('offset', $offset);
         }
 
-        if (self::get_atts('max_items') == null) {
-            $max_items = self::get_default_att('max_items');
-            self::set_att('max_items', $max_items);
+        if (static::get_atts('max_items') == null) {
+            $max_items = static::get_default_att('max_items');
+            static::set_att('max_items', $max_items);
         }
 
-        if (self::get_atts('posts_per_page') == null) {
-            $posts_per_page = self::get_default_att('posts_per_page');
-            self::set_att('posts_per_page', $posts_per_page);
+        if (static::get_atts('posts_per_page') == null) {
+            $posts_per_page = static::get_default_att('posts_per_page');
+            static::set_att('posts_per_page', $posts_per_page);
         }
 
 
-        if (self::get_atts('max_items') <= 1) {
-            $max_items = self::get_default_att('max_items');
-            self::set_att('max_items', apply_filters('vc_basic_grid_max_items', $max_items));
+        if (static::get_atts('max_items') <= 1) {
+            $max_items = static::get_default_att('max_items');
+            static::set_att('max_items', apply_filters('vc_basic_grid_max_items', $max_items));
         }
 
-        self::setPagingAll(self::get_atts('max_items'));
+        static::setPagingAll(static::get_atts('max_items'));
     }
 
     protected static function setPagingAll($max_items)
     {
-        self::set_att('query_posts_per_page', self::get_atts('posts_per_page'));
-        self::set_att('query_offset', self::get_atts('offset'));
+        static::set_att('query_posts_per_page', static::get_atts('posts_per_page'));
+        static::set_att('query_offset', static::get_atts('offset'));
     }
 
 
@@ -330,6 +346,9 @@ class _Grid extends Shortcode{
         ));
 
         $parsed['posts_per_page'] = !empty($parsed['posts_per_page']) ? $parsed['posts_per_page'] : $parsed['numberposts'];
+
+
+        
         return $parsed;
     }
 
@@ -352,28 +371,29 @@ class _Grid extends Shortcode{
     public static function buildItems()
     {
 
-        self::$WP_Query = new \WP_Query();
-        self::set_custom_content_limits();
+        static::$WP_Query = new \WP_Query();
+        static::set_custom_content_limits();
 
         $atts       = static::get_atts();
+
         $args       = static::buildQuery($atts);
         $settings   = static::filterQuerySettings($args);
 
-       
-        $post_data      = self::$WP_Query->query($settings);
-        if (is_object(self::$WP_Query)) {
-            self::$count_posts =  self::$WP_Query->found_posts;
+        $post_data      = static::$WP_Query->query($settings);
+        if (is_object(static::$WP_Query)) {
+            static::$count_posts =  static::$WP_Query->found_posts;
         }
-        $posts_per_page = self::get_atts('posts_per_page');
+
+        $posts_per_page = static::get_atts('posts_per_page');
 
         if ($posts_per_page > 0 && count($post_data) > $posts_per_page) {
             $post_data = array_slice($post_data, 0, $posts_per_page);
         }
 
         foreach ($post_data as $post) {
-            $post->filter_terms = wp_get_object_terms($post->ID, self::get_atts('filter_source'), array('fields' => 'ids'));
-            self::$filter_terms = wp_parse_args(self::$filter_terms, $post->filter_terms);
-            self::$items[] = $post;
+            $post->filter_terms = wp_get_object_terms($post->ID, static::get_atts('filter_source'), array('fields' => 'ids'));
+            static::$filter_terms = wp_parse_args(static::$filter_terms, $post->filter_terms);
+            static::$items[] = $post;
         }
     }
 
@@ -382,58 +402,34 @@ class _Grid extends Shortcode{
     {
 
         $output         = $items = '';
-        $filter_terms   = self::$filter_terms;
-        $atts           = self::get_atts();
-        $settings       = self::$grid_settings;
-        $is_end         = isset(self::$is_end) && self::$is_end;
-
-        $currentScope = \WPBMap::getScope();
-
-        if (is_array(self::$items) && !empty(self::$items)) {
-            \WPBMap::setScope(\Vc_Grid_Item_Editor::postType());
-            require_once vc_path_dir('PARAMS_DIR', 'vc_grid_item/class-vc-grid-item.php');
-            self::$grid_item = new \Vc_Grid_Item();
-            self::$grid_item->setGridAttributes($atts);
-            self::$grid_item->setIsEnd($is_end);
-            self::$grid_item->setTemplateById($atts['item']);
-
-            $output .= self::$grid_item->addShortcodesCustomCss();
-
-            ob_start();
-            // if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) wp_print_styles();
-            $output .= ob_get_clean();
+        $filter_terms   = static::$filter_terms;
+        $atts           = static::get_atts();
+        $settings       = static::$grid_settings;
+        $is_end         = isset(static::$is_end) && static::$is_end;
 
 
-            $attributes = array(
-                'filter_terms' => $filter_terms,
-                'atts'          => $atts,
-                'grid_item',
-                self::$grid_item,
-            );
-            $output .= apply_filters('vc_basic_grid_template_filter', vc_get_template('shortcodes/vc_basic_grid_filter.php', $attributes), $attributes);
+        if (is_array(static::$items) && !empty(static::$items)) {
 
             global $post;
             $backup = $post;
-            foreach (self::$items as $postItem) {
-                self::$WP_Query->setup_postdata($postItem);
+            foreach (static::$items as $postItem) {
+                static::$WP_Query->setup_postdata($postItem);
                 $post           = $postItem;
-                $mx_item        = self::$grid_item->renderItem($postItem);
-                $cclass         = self::get_atts('cclass');
-                $items         .= preg_replace('/(?!vc_grid-item ) vc_col.\w{2}.\d{1,2}/'," {$cclass} ", $mx_item);
+                $item           = static::$grid_item->renderItem($postItem);
+                $items         .= $item;
             }
             wp_reset_postdata();
             $post = $backup;
+
         } else {
-            $shortcode_id               = self::get_atts('shortcode_id');
-            $not_results_page_block_id  = self::get_atts('not_results_page_block');
+            $shortcode_id               = static::get_atts('shortcode_id');
+            $not_results_page_block_id  = static::get_atts('not_results_page_block');
             \WPBMap::addAllMappedShortcodes();
 
             if($not_results_page_block_id){
                 $pb      = get_the_content($not_results_page_block_id);
                 $output .= do_shortcode($pb);
             }
- 
-
             
             $output .= "
             <script>
@@ -443,18 +439,17 @@ class _Grid extends Shortcode{
             </script>";
         }
         if ($items != "") {
-            $output     .= self::renderPagination($settings, $items);
+            $output     .= static::renderPagination($items);
         }
 
-        \WPBMap::setScope($currentScope);
         return $output;
     }
 
 
-    public static function renderPagination($settings, $content = '', $css_classes = '')
+    public static function renderPagination($content = '')
     {
         $output             = '';
-        $atts               = self::get_atts();
+        $atts               = static::get_atts();
         $paged              = (isset($atts['paged'])                && !empty($atts['paged']))                                                      ? $atts['paged']                : 1;
         $show_pagination    = (isset($atts['show_pagination'])      && !empty($atts['show_pagination']) &&  $atts['show_pagination'] == 'hidden')     ? false : $atts['show_pagination'];
 
@@ -468,10 +463,10 @@ class _Grid extends Shortcode{
             $current_page_html  = null;
             $items_founds       = null;
             $opt_ipp            = $posts_per_page;
-            $max_num_pages      = self::$WP_Query->max_num_pages;
-            $found_posts        = self::$WP_Query->found_posts;
+            $max_num_pages      = static::$WP_Query->max_num_pages;
+            $found_posts        = static::$WP_Query->found_posts;
             $n_pages            = ceil($found_posts / $posts_per_page);
-            $count_posts        = self::$count_posts;
+            $count_posts        = static::$count_posts;
             while ($opt_ipp <= $max_post_per_page) {
                 $selected = ($posts_per_page == $opt_ipp) ? "selected='selected'" : null;
                 $items_pp_html .= "<option value='$opt_ipp' {$selected}>$opt_ipp</option>";
@@ -541,18 +536,18 @@ class _Grid extends Shortcode{
     public static function generate_css()
     {   
         $style  = '';
-        $atts                       = self::get_atts();
-        $parent_id                  = self::get_atts('vc_id');
-        $element_width              = (int)self::get_atts('element_width', 4);
-        $mx_responsive_1            = (int)self::get_atts('mx_responsive_1', 1200);
-        $mx_responsive_val_1        = (int)self::get_atts('mx_responsive_val_1', $element_width);
+        $atts                       = static::get_atts();
+        $parent_id                  = static::get_atts('vc_id');
+        $element_width              = (int)static::get_atts('element_width', 4);
+        $mx_responsive_1            = (int)static::get_atts('mx_responsive_1', 1200);
+        $mx_responsive_val_1        = (int)static::get_atts('mx_responsive_val_1', $element_width);
 
-        $mx_responsive_2            = (int)self::get_atts('mx_responsive_2', 1200);
-        $mx_responsive_val_2        = (int)self::get_atts('mx_responsive_val_2', $mx_responsive_val_1);
+        $mx_responsive_2            = (int)static::get_atts('mx_responsive_2', 1200);
+        $mx_responsive_val_2        = (int)static::get_atts('mx_responsive_val_2', $mx_responsive_val_1);
 
-        $mx_responsive_3            = (int)self::get_atts('mx_responsive_3', 1200);
-        $mx_responsive_val_3        = (int)self::get_atts('mx_responsive_val_3', $mx_responsive_val_2);
-        $items_gap                  = (int)self::get_atts('items_gap', 10);
+        $mx_responsive_3            = (int)static::get_atts('mx_responsive_3', 1200);
+        $mx_responsive_val_3        = (int)static::get_atts('mx_responsive_val_3', $mx_responsive_val_2);
+        $items_gap                  = (int)static::get_atts('items_gap', 10);
 
         $style .= "
         .{$parent_id} .obser-custom-grid-items {
@@ -634,19 +629,19 @@ class _Grid extends Shortcode{
 
     public static function output($atts, $content)
     {
-        $element_id     = self::get_atts('vc_id');
-        $atts           = self::get_atts();
-        $shortcode_id   = self::get_atts('shortcode_id');
+        $element_id     = static::get_atts('vc_id');
+        $atts           = static::get_atts();
+        $shortcode_id   = static::get_atts('shortcode_id');
 
-        self::buildItems();
+        static::buildItems();
 
-        $id                 = self::get_atts('el_id');
-        $post_type          = esc_attr(implode(" obser-grid-", self::get_atts('post_type')));
+        $id                 = static::get_atts('el_id');
+        $post_type          = esc_attr(implode(" obser-grid-", static::get_atts('post_type')));
         $current_page_id    =  esc_attr(get_the_ID());
-        $el_class           = esc_attr(self::get_atts('el_class'));
+        $el_class           = esc_attr(static::get_atts('el_class'));
         $el_nonce           = esc_attr(vc_generate_nonce('vc-public-nonce'));
-        $items              = self::renderItems();
-        $json_data          = esc_attr(wp_json_encode(self::$grid_settings));
+        $items              = static::renderItems();
+        $json_data          = esc_attr(wp_json_encode(static::$grid_settings));
 
         $output  = "
         <div  id='{$id}' class='contenedor-obser-list contenedor-obser-grid {$el_class} obser-grid-{$post_type} {$element_id}' data-shortcode_id='$shortcode_id' data-obser-grid-settings='$json_data' data-vc-post-id='{$current_page_id}' data-vc-public-nonce='{$el_nonce}'data-vc-post-id='{$current_page_id}' data-vc-public-nonce='{$el_nonce}'>
@@ -666,6 +661,27 @@ class _Grid extends Shortcode{
         // $nav_color_hover            = (is_array($nav_color_hover) && array_key_exists('rgba',$nav_color_hover))? $nav_color_hover['rgba'] : $nav_color_hover['color'];
 
         $general_styles = "
+
+        .obser-custom-preloader {
+            position: fixed;
+            left: 0;
+            right: 0;
+            background-color: rgba(255,255,255,.8);
+            z-index: 1000;
+            height: 100vh;
+            top: 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .preloader-text {
+            position: absolute;
+            top: 0;
+            transform: translateY(50%);
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
 
         .prev-next-link-container {
             opacity: 1;
