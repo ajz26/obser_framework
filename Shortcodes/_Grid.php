@@ -21,17 +21,23 @@ class _Grid extends Shortcode{
     static $is_end;
     static $grid_item;
     static $filter_terms;
-    // static $shortcode = "obser_grid";
+    static $order_methods = [
+        'date_desc'     => 'Más recientes',
+        'date_asc'      => 'Más antigüos',
+        'title_asc'     => 'Alfabéticamente ASC',
+        'title_desc'    => 'Alfabéticamente DESC',
+    ];
+
+
     protected static $grid_id_unique_name = 'vc_gid';
 
     protected static function postID()
     {
         if (!static::$post_id && is_page(  )) {
-            static::$post_id  = get_the_ID();
-        }else if(!static::$post_id && is_archive(  )){
             
-            $term_id        = get_queried_object()->term_id;
-            $taxonomy       = get_queried_object()->taxonomy;
+            static::$post_id  = get_the_ID();
+
+        }else if(!static::$post_id && is_archive(  )){
 
             if(function_exists('us_get_page_area_id')){
                 static::$post_id = us_get_page_area_id('content');
@@ -64,7 +70,8 @@ class _Grid extends Shortcode{
 
             static::$grid_settings['filters'] = isset(static::$grid_settings['filters'])?: array();
             static::$grid_settings['filters'] = array_merge((array)static::$grid_settings['filters'],array(
-                $term->taxonomy => $term->slug
+                $term->taxonomy => $term->slug,
+                'gestion_states_taxonomy' => 'disponible'
             ));
 
             $filters = static::get_atts('filters',array());
@@ -155,11 +162,13 @@ class _Grid extends Shortcode{
 
         $shortcode_atts     = $shortcode['atts'];
 
+
         foreach($vc_request_param AS $param => $data){
             if($param && $data){
                 $shortcode_atts[$param] = $data;
             }
         }
+
         static::buildAtts($shortcode_atts, $shortcode['content']);
                 static::buildItems();
         return  static::renderItems();
@@ -282,13 +291,26 @@ class _Grid extends Shortcode{
 
             $atts = static::get_atts();
             $atts = Helpers::merge_advanced_atts($atts,$advanced_query_args);
-            
-
             static::set_atts($atts);
+        }
+        
+    }
 
+    protected static function get_order_atts(){
+        if(!$orderby = static::get_atts('orderby',null)) return null;
+        if(preg_match('/^(?<key>[\w\_]+)_(?<sort>asc|desc)$/',$orderby, $matches)){
+            $key        = $matches['key'];
+            $sort       = $matches['sort'];
+        }else{
+            $key        = 'date';
+            $sort       = 'asc';
         }
 
-        
+
+        return [
+            'orderby'   => $key,
+            'order'     => $sort,
+        ];
     }
 
     protected static function get_default_att($att = null)
@@ -355,10 +377,11 @@ class _Grid extends Shortcode{
     static function buildQuery(array $atts)
     {
         $meta_query = array('');
-
+        $order = static::get_order_atts();
         $settings = array(
             'posts_per_page'    => $atts['query_posts_per_page'],
-            'orderby'           => $atts['orderby'],
+            'orderby'           => $order['orderby'],
+            'order'             => $order['order'],
             'meta_query'        => $meta_query,
             'post_type'         => $atts['post_type'],
             'post_status'       => 'publish',
@@ -377,9 +400,12 @@ class _Grid extends Shortcode{
         $atts       = static::get_atts();
 
         $args       = static::buildQuery($atts);
-        $settings   = static::filterQuerySettings($args);
 
-        $post_data      = static::$WP_Query->query($settings);
+        // var_export($args);
+
+        $settings   = static::filterQuerySettings($args);
+        $post_data  = static::$WP_Query->query($settings);
+
         if (is_object(static::$WP_Query)) {
             static::$count_posts =  static::$WP_Query->found_posts;
         }
@@ -448,14 +474,13 @@ class _Grid extends Shortcode{
 
     public static function renderPagination($content = '')
     {
+
         $output             = '';
         $atts               = static::get_atts();
         $paged              = (isset($atts['paged'])                && !empty($atts['paged']))                                                      ? $atts['paged']                : 1;
         $show_pagination    = (isset($atts['show_pagination'])      && !empty($atts['show_pagination']) &&  $atts['show_pagination'] == 'hidden')     ? false : $atts['show_pagination'];
 
         if ($show_pagination) {
-
-            $orderby            = $atts["orderby"];
             $posts_per_page     = (int)$atts['posts_per_page'];
             $pages              = $pages_html = "";
             $max_post_per_page  = ($posts_per_page * 4);
@@ -512,9 +537,27 @@ class _Grid extends Shortcode{
         }
 
 
+        $orderby = self::get_atts("orderby", 'date_asc');
+            
+        $order_methods = static::$order_methods;
+        $order_options  = null; 
+        
+        foreach($order_methods as $order_method => $order_method_label){
+            $order_selected = $orderby == $order_method ? 'selected="selected"' : null;
+            $order_options .= "<option value=\"{$order_method}\" {$order_selected} >{$order_method_label}</option>";
+        }
+
+        unset($order_selected);
+
+        $order_select = "<div class=\"sort_grid_select_container\"><form onsubmit=\"return;\" method=\"\POST\" autocomplete=\"off\">
+            <span>Ordenar por: </span>    
+            <select name=\"sort_grid\" class=\"sort_grid_select\">{$order_options}</select><form></div>";
 
 
-        $html_top       = (\in_array($show_pagination, array('top', 'all')) && $n_pages >= 1) ? "<div class='grid-nav grid-top'>{$prev_link}{$next_link} {$items_founds}</div>" : null;
+
+
+
+        $html_top       = (\in_array($show_pagination, array('top', 'all')) && $n_pages >= 1) ? "<div class='grid-nav grid-top'>{$prev_link}{$next_link} {$items_founds} {$order_select}</div>" : null;
         $html_bottom    = (\in_array($show_pagination, array('bottom', 'all'))  && $n_pages >= 1 ) ? "<div class='grid-nav grid-bottom'>{$prev_link}{$next_link} {$current_page_html}</div>" : null;
 
         $output     .= "
@@ -522,10 +565,9 @@ class _Grid extends Shortcode{
                         {$content}
                         {$html_bottom}";
 
-
-
         return $output;
     }
+
     protected static function parse_json_data(string $json)
     {
         $json = \str_replace("``", '"', $json);
@@ -661,6 +703,78 @@ class _Grid extends Shortcode{
         // $nav_color_hover            = (is_array($nav_color_hover) && array_key_exists('rgba',$nav_color_hover))? $nav_color_hover['rgba'] : $nav_color_hover['color'];
 
         $general_styles = "
+
+        .obser-custom-grid-items {
+            display: flex;
+            flex-flow: wrap;
+            flex-wrap: wrap;
+        }
+
+        .grid-nav {
+        flex: 0 0 100%;
+        width: 100%;
+        display: flex;
+        justify-content: start;
+        margin-bottom: 1rem;
+        align-items: self-end;
+        flex-wrap :wrap;
+        }
+
+        .grid-nav.grid-top {
+            align-items: center;
+        }
+
+        .grid-nav > div {
+        margin-right: 1rem;
+        }
+        .grid-nav-info {
+        margin-left: .5rem;
+        }
+
+        .grid-nav.grid-bottom {
+        margin-top: 1rem;
+        }
+
+        .prev-next-link{
+        cursor:pointer;
+        }
+        .prev-next-link-container.prev-next-off {
+        pointer-events: none;
+        opacity: .5;
+        }
+
+        .prev-next-link-container i {
+        padding: 2px 7px;
+        background-color: #f3f6f9;
+        margin: ;
+        border: 1px solid #cccccc;
+        border-radius: 5px;
+        }
+        .prev-next-link-container {
+        margin: 0 !important;
+        text-align: center;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-flow: row;
+        width: 30px;
+        }
+        .prev-next-link-container .prev-next-link-text {
+        display: none;
+        }
+
+        .sort_grid_select_container {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .sort_grid_select {
+            margin-left: 1rem;
+            border: 1px solid #ccc;
+            border-radius: .5rem;
+            width: auto;
+        }
 
         .obser-custom-preloader {
             position: fixed;

@@ -110,7 +110,7 @@ class obser_GRID {
             }
           }
         }
-        return "";
+        return null;
     }
 
 
@@ -120,6 +120,10 @@ class obser_GRID {
     settings         =   JSON.parse(settings);
     if(atts.paged) {
         settings['paged']  = atts.paged;
+    }
+
+    if(atts.orderby){
+        settings['orderby'] = atts.orderby;
     }
 
     if(atts.filters) {
@@ -221,7 +225,18 @@ jQuery(document).on('click','.prev-next-link', function(){
     let parent_grid = jQuery(this).parents('.contenedor-obser-grid').attr('data-shortcode_id'),
         next_page   = jQuery(this).attr('data-next_page'); 
         obser_grid.handlerFields(parent_grid,false);
+        order_by    = jQuery(this).closest('.obser-custom-grid-items').children('.grid-nav').children('.sort_grid_select_container').children('form').children('select.sort_grid_select').children('option:selected').val();
+
+        obser_grid._add_setting(parent_grid, 'orderby',order_by,false);
         obser_grid._add_setting(parent_grid, 'paged',next_page,true);
+});
+
+jQuery(document).on('change','.sort_grid_select', function(){
+    let parent_grid = jQuery(this).parents('.contenedor-obser-grid').attr('data-shortcode_id')
+        obser_grid.handlerFields(parent_grid,false);
+        order_by    = jQuery(this).children('option:selected').val();
+        obser_grid._add_setting(parent_grid, 'paged',1,false);
+        obser_grid._add_setting(parent_grid, 'orderby',order_by,true);
 });
 
 
