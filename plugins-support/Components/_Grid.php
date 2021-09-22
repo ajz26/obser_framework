@@ -41,8 +41,8 @@ abstract class _Grid extends Component {
                     'value'                 => array(
                         esc_html__( 'Nombre ASC', 'ccom' )                  => 'post_title_asc',
                         esc_html__( 'Nombre DESC', 'ccom' )                 => 'post_title_desc',
-                        esc_html__( 'Fecha de publicación DESC', 'ccom' )   => 'date_desc',
                         esc_html__( 'Fecha de publicación ASC', 'ccom' )    => 'date_asc',
+                        esc_html__( 'Fecha de publicación DESC', 'ccom' )   => 'date_desc',
                     ),
                     'save_always'       => true
                 ),
