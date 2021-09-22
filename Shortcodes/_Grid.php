@@ -555,8 +555,6 @@ class _Grid extends Shortcode{
 
 
 
-
-
         $html_top       = (\in_array($show_pagination, array('top', 'all')) && $n_pages >= 1) ? "<div class='grid-nav grid-top'>{$prev_link}{$next_link} {$items_founds} {$order_select}</div>" : null;
         $html_bottom    = (\in_array($show_pagination, array('bottom', 'all'))  && $n_pages >= 1 ) ? "<div class='grid-nav grid-bottom'>{$prev_link}{$next_link} {$current_page_html}</div>" : null;
 
@@ -769,6 +767,7 @@ class _Grid extends Shortcode{
             align-items: center;
         }
 
+<<<<<<< HEAD
         .sort_grid_select_container form {
             display: flex;
             align-items: center;
@@ -776,6 +775,8 @@ class _Grid extends Shortcode{
             flex-flow: row;
         }
 
+=======
+>>>>>>> 65485c8c1b606336c8368266d90b580ebfbdaa35
         .sort_grid_select {
             margin-left: 1rem;
             border: 1px solid #ccc;
