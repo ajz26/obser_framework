@@ -6,4 +6,17 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'OBSER\\Classes\\Api\\Endpoint' => $baseDir . '/Core/Classes/Api/Endpoint.php',
+    'OBSER\\Classes\\Arr' => $baseDir . '/Core/Classes/Arr.php',
+    'OBSER\\Classes\\Component' => $baseDir . '/Core/Classes/Component.php',
+    'OBSER\\Classes\\Helpers' => $baseDir . '/Core/Classes/Helpers.php',
+    'OBSER\\Classes\\Mails\\Controller' => $baseDir . '/Core/Classes/Mails/Controller.php',
+    'OBSER\\Classes\\Metabox\\Field' => $baseDir . '/Core/Classes/Metabox/Field.php',
+    'OBSER\\Classes\\Metabox\\Metabox' => $baseDir . '/Core/Classes/Metabox/Metabox.php',
+    'OBSER\\Classes\\Metabox\\Tab' => $baseDir . '/Core/Classes/Metabox/Tab.php',
+    'OBSER\\Classes\\Settings' => $baseDir . '/Core/Classes/Settings.php',
+    'OBSER\\Classes\\Shortcode' => $baseDir . '/Core/Classes/Shortcode.php',
+    'OBSER\\Shortcodes\\Gallery' => $baseDir . '/Shortcodes/Gallery.php',
+    'OBSER\\Shortcodes\\_Grid' => $baseDir . '/Shortcodes/_Grid.php',
+    'OBSER\\WPB_Components\\_Grid' => $baseDir . '/plugins-support/Components/_Grid.php',
 );

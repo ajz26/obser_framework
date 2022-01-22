@@ -258,20 +258,33 @@ static function upload_external_media($raw_urls) {
 
     static function set_term_by_slug($post,$value,$taxonomy,$append = false){
 
-        $term       = get_term_by('slug', $value ,$taxonomy);
-        $term_id    = isset($term->term_id) ? $term->term_id : null;
-        
-        if(!$term_id){
-           $term = wp_insert_term($value, $taxonomy);
-           if ( !is_wp_error( $term ) ) {
-                $term_id = $term['term_id'];
-            }
-        }
+        $terms = array_map(
+                function($v) use ($taxonomy){
+                    $term       = get_term_by('slug', $v ,$taxonomy);
+                    $term_id    = isset($term->term_id) ? $term->term_id : null;
+
+                    if(!$term_id){
+                        $term = wp_insert_term($v, $taxonomy);
+                        if ( !is_wp_error( $term ) ) {
+                                $term_id = $term['term_id'];
+                            }
+                        }
+                    return $term_id;
+                },(array)$value);
+
+        if(is_array($value) && count($value) > 1) $append = true;
+
         try {
-           $res =  wp_set_object_terms($post->ID,$term_id, $taxonomy,$append);
+           
+            wp_set_object_terms($post->ID,'', $taxonomy);
+
+            wp_set_object_terms($post->ID,$terms, $taxonomy,$append);
+
         } catch (\WP_Error $error) {
             error_log($error->get_error_messages());
         }
+
+
     }
 
 
